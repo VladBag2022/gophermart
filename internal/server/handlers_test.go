@@ -484,7 +484,7 @@ func TestServer_withdraw(t *testing.T) {
 	}
 	tests := []struct {
 		name    		string
-		userBalances	map[string]int
+		userBalances	map[string]float64
 		user 			string
 		contentType 	string
 		content 		string
@@ -492,9 +492,9 @@ func TestServer_withdraw(t *testing.T) {
 	}{
 		{
 			name:    		"positive test",
-			userBalances: 	map[string]int{
-				"a": 100,
-				"b": 200,
+			userBalances: 	map[string]float64{
+				"a": 100.0,
+				"b": 200.0,
 			},
 			user: 			"a",
 			contentType: 	"application/json",
@@ -505,7 +505,7 @@ func TestServer_withdraw(t *testing.T) {
 		},
 		{
 			name:    		"negative test - malformed content",
-			userBalances: 	map[string]int{},
+			userBalances: 	map[string]float64{},
 			user: 			"a",
 			contentType: 	"application/json",
 			content: 		"{\"login\": \"cd\",\"password\": \"12",
@@ -515,7 +515,7 @@ func TestServer_withdraw(t *testing.T) {
 		},
 		{
 			name:    		"negative test - wrong content type",
-			userBalances: 	map[string]int{},
+			userBalances: 	map[string]float64{},
 			user: 			"a",
 			contentType: 	"text",
 			content: 		"{\"order\": \"cd\",\"sum\": \"1234\"}",
@@ -525,7 +525,7 @@ func TestServer_withdraw(t *testing.T) {
 		},
 		{
 			name:    		"negative test - wrong content",
-			userBalances: 	map[string]int{},
+			userBalances: 	map[string]float64{},
 			user: 			"a",
 			contentType: 	"application/json",
 			content: 		"{\"user\": \"cd\",\"pass\": \"1234\"}",
@@ -535,7 +535,7 @@ func TestServer_withdraw(t *testing.T) {
 		},
 		{
 			name:    		"negative test - unauthorized",
-			userBalances: 	map[string]int{
+			userBalances: 	map[string]float64{
 				"a": 100,
 				"b": 200,
 			},
@@ -548,7 +548,7 @@ func TestServer_withdraw(t *testing.T) {
 		},
 		{
 			name:    		"negative test - low balance",
-			userBalances: 	map[string]int{
+			userBalances: 	map[string]float64{
 				"a": 100,
 				"b": 200,
 			},
@@ -561,7 +561,7 @@ func TestServer_withdraw(t *testing.T) {
 		},
 		{
 			name:    		"negative test - wrong order number",
-			userBalances: 	map[string]int{
+			userBalances: 	map[string]float64{
 				"a": 100,
 				"b": 200,
 			},
