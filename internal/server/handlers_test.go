@@ -46,7 +46,7 @@ func TestServer_register(t *testing.T) {
 		want    	want
 	}{
 		{
-			name:    		"positive test with some logins",
+			name:    		"positive test - some logins",
 			logins: 		[]string{"a", "b"},
 			contentType: 	"application/json",
 			content: 		"{\"login\": \"c\",\"password\": \"123\"}",
@@ -55,7 +55,7 @@ func TestServer_register(t *testing.T) {
 			},
 		},
 		{
-			name:    		"positive test without any logins",
+			name:    		"positive test - no logins",
 			logins: 		[]string{},
 			contentType: 	"application/json",
 			content: 		"{\"login\": \"c\",\"password\": \"123\"}",
@@ -64,7 +64,7 @@ func TestServer_register(t *testing.T) {
 			},
 		},
 		{
-			name:    		"negative test with empty login",
+			name:    		"negative test - empty login",
 			logins: 		[]string{},
 			contentType: 	"application/json",
 			content: 		"{\"login\": \"\",\"password\": \"123\"}",
@@ -73,7 +73,7 @@ func TestServer_register(t *testing.T) {
 			},
 		},
 		{
-			name:    		"negative test with empty password",
+			name:    		"negative test - empty password",
 			logins: 		[]string{},
 			contentType: 	"application/json",
 			content: 		"{\"login\": \"c\",\"password\": \"\"}",
@@ -82,7 +82,7 @@ func TestServer_register(t *testing.T) {
 			},
 		},
 		{
-			name:    		"negative test with empty login and password",
+			name:    		"negative test - empty login and password",
 			logins: 		[]string{},
 			contentType: 	"application/json",
 			content: 		"{\"login\": \"\",\"password\": \"\"}",
@@ -91,7 +91,7 @@ func TestServer_register(t *testing.T) {
 			},
 		},
 		{
-			name:    		"negative test with duplicate login",
+			name:    		"negative test - duplicate login",
 			logins: 		[]string{"a", "b"},
 			contentType: 	"application/json",
 			content: 		"{\"login\": \"a\",\"password\": \"123\"}",
@@ -100,7 +100,7 @@ func TestServer_register(t *testing.T) {
 			},
 		},
 		{
-			name:    		"negative test with wrong content type",
+			name:    		"negative test - wrong content type",
 			logins: 		[]string{},
 			contentType: 	"text/plain; charset=utf-8",
 			content: 		"{\"login\": \"\",\"password\": \"\"}",
@@ -109,7 +109,7 @@ func TestServer_register(t *testing.T) {
 			},
 		},
 		{
-			name:    		"negative test with malformed content",
+			name:    		"negative test - malformed content",
 			logins: 		[]string{"a", "b"},
 			contentType: 	"application/json",
 			content: 		"{\"login\": \"a\",\"password\": \"12",
@@ -118,7 +118,7 @@ func TestServer_register(t *testing.T) {
 			},
 		},
 		{
-			name:    		"negative test with wrong content",
+			name:    		"negative test - wrong content",
 			logins: 		[]string{"a", "b"},
 			contentType: 	"application/json",
 			content: 		"{\"user\": \"a\",\"pass\": \"12\"}",
@@ -171,7 +171,7 @@ func TestServer_login(t *testing.T) {
 			},
 		},
 		{
-			name:    		"negative test with wrong password",
+			name:    		"negative test - wrong password",
 			users: 			[]user{
 				{"a", "123"},
 				{"b", "123"},
@@ -184,7 +184,7 @@ func TestServer_login(t *testing.T) {
 			},
 		},
 		{
-			name:    		"negative test with wrong login",
+			name:    		"negative test - wrong login",
 			users: 			[]user{
 				{"a", "123"},
 				{"b", "123"},
@@ -197,7 +197,7 @@ func TestServer_login(t *testing.T) {
 			},
 		},
 		{
-			name:    		"negative test with malformed content",
+			name:    		"negative test - malformed content",
 			users: 			[]user{},
 			contentType: 	"application/json",
 			content: 		"{\"login\": \"cd\",\"password\": \"12",
@@ -206,7 +206,7 @@ func TestServer_login(t *testing.T) {
 			},
 		},
 		{
-			name:    		"negative test with wrong content type",
+			name:    		"negative test - wrong content type",
 			users: 			[]user{},
 			contentType: 	"text",
 			content: 		"{\"login\": \"cd\",\"password\": \"1234\"}",
@@ -215,7 +215,7 @@ func TestServer_login(t *testing.T) {
 			},
 		},
 		{
-			name:    		"negative test with wrong content",
+			name:    		"negative test - wrong content",
 			users: 			[]user{},
 			contentType: 	"application/json",
 			content: 		"{\"user\": \"cd\",\"pass\": \"1234\"}",
@@ -230,6 +230,126 @@ func TestServer_login(t *testing.T) {
 			defer ts.Close()
 
 			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/login",
+				strings.NewReader(tt.content))
+			err := response.Body.Close()
+			require.NoError(t, err)
+
+			assert.Equal(t, tt.want.statusCode, response.StatusCode)
+		})
+	}
+}
+
+func TestServer_orders(t *testing.T) {
+	type want struct {
+		statusCode  int
+	}
+
+	tests := []struct {
+		name    	string
+		userOrders 	map[string][]int
+		user 		string
+		contentType string
+		content 	string
+		want    	want
+	}{
+		{
+			name:    		"positive test - order already uploaded",
+			userOrders:		map[string][]int{
+				"a": {123456789031, 566165445},
+				"b": {9579343, 58568287791534},
+			},
+			user:			"a",
+			contentType: 	"text/plain",
+			content: 		"123456789031",
+			want: want{
+				statusCode:  200,
+			},
+		},
+		{
+			name:    		"positive test - new order",
+			userOrders:		map[string][]int{
+				"a": {123456789031, 566165445},
+				"b": {9579343, 58568287791534},
+			},
+			user:			"a",
+			contentType: 	"text/plain",
+			content: 		"123456789032",
+			want: want{
+				statusCode:  200,
+			},
+		},
+		{
+			name:    		"negative test - wrong content type",
+			userOrders:		map[string][]int{
+				"a": {123456789031, 566165445},
+				"b": {9579343, 58568287791534},
+			},
+			user:			"a",
+			contentType: 	"application/json",
+			content: 		"123456789032",
+			want: want{
+				statusCode:  400,
+			},
+		},
+		{
+			name:    		"negative test - wrong content",
+			userOrders:		map[string][]int{
+				"a": {123456789031, 566165445},
+				"b": {9579343, 58568287791534},
+			},
+			user:			"a",
+			contentType: 	"text/plain",
+			content: 		"gg",
+			want: want{
+				statusCode:  400,
+			},
+		},
+		{
+			name:    		"negative test - unauthorized",
+			userOrders:		map[string][]int{
+				"a": {123456789031, 566165445},
+				"b": {9579343, 58568287791534},
+			},
+			user:			"",
+			contentType: 	"text/plain",
+			content: 		"123",
+			want: want{
+				statusCode:  401,
+			},
+		},
+		{
+			name:    		"negative test - order already uploaded by another user",
+			userOrders:		map[string][]int{
+				"a": {123456789031, 566165445},
+				"b": {9579343, 58568287791534},
+			},
+			user:			"b",
+			contentType: 	"text/plain",
+			content: 		"123456789031",
+			want: want{
+				statusCode:  409,
+			},
+		},
+		{
+			name:    		"negative test - bad Luhn check",
+			userOrders:		map[string][]int{
+				"a": {123456789031, 566165445},
+				"b": {9579343, 58568287791534},
+			},
+			user:			"b",
+			contentType: 	"text/plain",
+			content: 		"123456789035",
+			want: want{
+				statusCode:  422,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ts := &httptest.Server{}
+			defer ts.Close()
+
+			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/orders",
 				strings.NewReader(tt.content))
 			err := response.Body.Close()
 			require.NoError(t, err)
