@@ -239,7 +239,7 @@ func TestServer_login(t *testing.T) {
 	}
 }
 
-func TestServer_new_order(t *testing.T) {
+func TestServer_upload_order(t *testing.T) {
 	type want struct {
 		statusCode  int
 	}
