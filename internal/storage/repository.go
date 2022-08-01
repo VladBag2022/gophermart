@@ -12,7 +12,7 @@ type OrderInfo struct {
 
 type WithdrawalInfo struct {
 	order 		int
-	sum 		int
+	sum 		float64
 	processedAt string
 }
 
@@ -51,13 +51,13 @@ type Repository interface {
 	Balance(
 		ctx context.Context,
 		login string,
-	) (current, withdrawn int, err error)
+	) (current, withdrawn float64, err error)
 
 	Withdraw(
 		ctx context.Context,
-		login string,
-		order int,
-		sum int,
+		login 	string,
+		order 	int,
+		sum 	float64,
 	) error
 
 	Withdrawals(
