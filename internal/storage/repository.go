@@ -39,8 +39,8 @@ type Repository interface {
 
 	UploadOrder(
 		ctx context.Context,
-		order int,
 		login string,
+		order int,
 	) error
 
 	Orders(
