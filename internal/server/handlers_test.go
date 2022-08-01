@@ -34,10 +34,6 @@ func makeTestRequest(t *testing.T, ts *httptest.Server, method, path string, bod
 	return response, string(responseBody)
 }
 
-func getTestServer(logins []string) *httptest.Server {
-	return &httptest.Server{}
-}
-
 func TestServer_register(t *testing.T) {
 	type want struct {
 		statusCode  int
@@ -103,13 +99,137 @@ func TestServer_register(t *testing.T) {
 				statusCode:  409,
 			},
 		},
+		{
+			name:    		"negative test with wrong content type",
+			logins: 		[]string{},
+			contentType: 	"text/plain; charset=utf-8",
+			content: 		"{\"login\": \"\",\"password\": \"\"}",
+			want: want{
+				statusCode:  400,
+			},
+		},
+		{
+			name:    		"negative test with malformed content",
+			logins: 		[]string{"a", "b"},
+			contentType: 	"application/json",
+			content: 		"{\"login\": \"a\",\"password\": \"12",
+			want: want{
+				statusCode:  400,
+			},
+		},
+		{
+			name:    		"negative test with wrong content",
+			logins: 		[]string{"a", "b"},
+			contentType: 	"application/json",
+			content: 		"{\"user\": \"a\",\"pass\": \"12\"}",
+			want: want{
+				statusCode:  400,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ts := getTestServer(tt.logins)
+			ts := &httptest.Server{}
 			defer ts.Close()
 
 			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/register",
+				strings.NewReader(tt.content))
+			err := response.Body.Close()
+			require.NoError(t, err)
+
+			assert.Equal(t, tt.want.statusCode, response.StatusCode)
+		})
+	}
+}
+
+func TestServer_login(t *testing.T) {
+	type want struct {
+		statusCode  int
+	}
+	type user struct {
+		login 	 	string
+		password 	string
+	}
+	tests := []struct {
+		name    	string
+		users 		[]user
+		contentType string
+		content 	string
+		want    	want
+	}{
+		{
+			name:    		"positive test",
+			users: 			[]user{
+				{"a", "123"},
+				{"b", "123"},
+				{"c", "123"},
+			},
+			contentType: 	"application/json",
+			content: 		"{\"login\": \"c\",\"password\": \"123\"}",
+			want: want{
+				statusCode:  200,
+			},
+		},
+		{
+			name:    		"negative test with wrong password",
+			users: 			[]user{
+				{"a", "123"},
+				{"b", "123"},
+				{"c", "123"},
+			},
+			contentType: 	"application/json",
+			content: 		"{\"login\": \"c\",\"password\": \"1234\"}",
+			want: want{
+				statusCode:  401,
+			},
+		},
+		{
+			name:    		"negative test with wrong login",
+			users: 			[]user{
+				{"a", "123"},
+				{"b", "123"},
+				{"c", "123"},
+			},
+			contentType: 	"application/json",
+			content: 		"{\"login\": \"cd\",\"password\": \"1234\"}",
+			want: want{
+				statusCode:  401,
+			},
+		},
+		{
+			name:    		"negative test with malformed content",
+			users: 			[]user{},
+			contentType: 	"application/json",
+			content: 		"{\"login\": \"cd\",\"password\": \"12",
+			want: want{
+				statusCode:  400,
+			},
+		},
+		{
+			name:    		"negative test with wrong content type",
+			users: 			[]user{},
+			contentType: 	"text",
+			content: 		"{\"login\": \"cd\",\"password\": \"1234\"}",
+			want: want{
+				statusCode:  400,
+			},
+		},
+		{
+			name:    		"negative test with wrong content",
+			users: 			[]user{},
+			contentType: 	"application/json",
+			content: 		"{\"user\": \"cd\",\"pass\": \"1234\"}",
+			want: want{
+				statusCode:  400,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ts := &httptest.Server{}
+			defer ts.Close()
+
+			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/login",
 				strings.NewReader(tt.content))
 			err := response.Body.Close()
 			require.NoError(t, err)
