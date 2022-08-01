@@ -587,3 +587,71 @@ func TestServer_withdraw(t *testing.T) {
 		})
 	}
 }
+
+func TestServer_withdrawals(t *testing.T) {
+	type want struct {
+		statusCode  int
+		contentType string
+		content 	bool
+	}
+	tests := []struct {
+		name    		string
+		userWithdrawals	map[string]bool
+		user 			string
+		want    		want
+	}{
+		{
+			name:    		"positive test - withdrawals found",
+			userWithdrawals: 	map[string]bool{
+				"a": true,
+				"b": false,
+			},
+			user: 			"a",
+			want: want{
+				statusCode:  	200,
+				contentType: 	"application/json",
+				content: 		true,
+			},
+		},
+		{
+			name:    		"positive test - no withdrawals",
+			userWithdrawals: 	map[string]bool{
+				"a": true,
+				"b": false,
+			},
+			user: 			"b",
+			want: want{
+				statusCode:  	204,
+				contentType: 	"",
+				content: 		false,
+			},
+		},
+		{
+			name:    		"negative test - unauthorized",
+			userWithdrawals: 	map[string]bool{
+				"a": true,
+				"b": false,
+			},
+			user: 			"c",
+			want: want{
+				statusCode:  	401,
+				contentType: 	"",
+				content: 		false,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ts := &httptest.Server{}
+			defer ts.Close()
+
+			response, content := makeTestRequest(t, ts, http.MethodPost, "/api/user/balance/withdraw", nil)
+			err := response.Body.Close()
+			require.NoError(t, err)
+
+			assert.Equal(t, tt.want.statusCode, response.StatusCode)
+			assert.Equal(t, tt.want.contentType, response.Header.Get("Content-Type"))
+			assert.Equal(t, tt.want.content, len(content) > 0)
+		})
+	}
+}
