@@ -477,3 +477,113 @@ func TestServer_balance(t *testing.T) {
 		})
 	}
 }
+
+func TestServer_withdraw(t *testing.T) {
+	type want struct {
+		statusCode  int
+	}
+	tests := []struct {
+		name    		string
+		userBalances	map[string]int
+		user 			string
+		contentType 	string
+		content 		string
+		want    		want
+	}{
+		{
+			name:    		"positive test",
+			userBalances: 	map[string]int{
+				"a": 100,
+				"b": 200,
+			},
+			user: 			"a",
+			contentType: 	"application/json",
+			content: 		"{\"order\": \"2377225624\",\"sum\": \"10\"}",
+			want: want{
+				statusCode:  200,
+			},
+		},
+		{
+			name:    		"negative test - malformed content",
+			userBalances: 	map[string]int{},
+			user: 			"a",
+			contentType: 	"application/json",
+			content: 		"{\"login\": \"cd\",\"password\": \"12",
+			want: want{
+				statusCode:  400,
+			},
+		},
+		{
+			name:    		"negative test - wrong content type",
+			userBalances: 	map[string]int{},
+			user: 			"a",
+			contentType: 	"text",
+			content: 		"{\"order\": \"cd\",\"sum\": \"1234\"}",
+			want: want{
+				statusCode:  400,
+			},
+		},
+		{
+			name:    		"negative test - wrong content",
+			userBalances: 	map[string]int{},
+			user: 			"a",
+			contentType: 	"application/json",
+			content: 		"{\"user\": \"cd\",\"pass\": \"1234\"}",
+			want: want{
+				statusCode:  400,
+			},
+		},
+		{
+			name:    		"negative test - unauthorized",
+			userBalances: 	map[string]int{
+				"a": 100,
+				"b": 200,
+			},
+			user: 			"c",
+			contentType: 	"application/json",
+			content: 		"{\"order\": \"2377225624\",\"sum\": \"10\"}",
+			want: want{
+				statusCode:  401,
+			},
+		},
+		{
+			name:    		"negative test - low balance",
+			userBalances: 	map[string]int{
+				"a": 100,
+				"b": 200,
+			},
+			user: 			"a",
+			contentType: 	"application/json",
+			content: 		"{\"order\": \"2377225624\",\"sum\": \"1000\"}",
+			want: want{
+				statusCode:  402,
+			},
+		},
+		{
+			name:    		"negative test - wrong order number",
+			userBalances: 	map[string]int{
+				"a": 100,
+				"b": 200,
+			},
+			user: 			"a",
+			contentType: 	"application/json",
+			content: 		"{\"order\": \"2377225626\",\"sum\": \"10\"}",
+			want: want{
+				statusCode:  422,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ts := &httptest.Server{}
+			defer ts.Close()
+
+			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/balance/withdraw",
+				strings.NewReader(tt.content))
+			err := response.Body.Close()
+			require.NoError(t, err)
+
+			assert.Equal(t, tt.want.statusCode, response.StatusCode)
+		})
+	}
+}
