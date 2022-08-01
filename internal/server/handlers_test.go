@@ -359,7 +359,6 @@ func TestServer_new_order(t *testing.T) {
 	}
 }
 
-
 func TestServer_list_orders(t *testing.T) {
 	type want struct {
 		statusCode  int
@@ -419,6 +418,56 @@ func TestServer_list_orders(t *testing.T) {
 			defer ts.Close()
 
 			response, content := makeTestRequest(t, ts, http.MethodGet, "/api/user/orders", nil)
+			err := response.Body.Close()
+			require.NoError(t, err)
+
+			assert.Equal(t, tt.want.statusCode, response.StatusCode)
+			assert.Equal(t, tt.want.contentType, response.Header.Get("Content-Type"))
+			assert.Equal(t, tt.want.content, len(content) > 0)
+		})
+	}
+}
+
+func TestServer_balance(t *testing.T) {
+	type want struct {
+		statusCode  int
+		contentType string
+		content 	bool
+	}
+
+	tests := []struct {
+		name    	string
+		users 		[]string
+		user 		string
+		want    	want
+	}{
+		{
+			name:    		"positive test",
+			users: 			[]string{"a", "b"},
+			user:			"a",
+			want: want{
+				statusCode:		200,
+				contentType: 	"application/json",
+				content: 	 	true,
+			},
+		},
+		{
+			name:    		"negative test - unauthorized",
+			users: 			[]string{"a", "b"},
+			user:			"c",
+			want: want{
+				statusCode:		401,
+				contentType: 	"",
+				content: 	 	false,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ts := &httptest.Server{}
+			defer ts.Close()
+
+			response, content := makeTestRequest(t, ts, http.MethodGet, "/api/user/balance", nil)
 			err := response.Body.Close()
 			require.NoError(t, err)
 
