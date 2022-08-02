@@ -20,7 +20,7 @@ func NewPostgresRepository(
 	if err != nil {
 		return nil, err
 	}
-	var p = &PostgresRepository{
+	p := &PostgresRepository{
 		database: db,
 	}
 	err = p.createSchema(ctx)
@@ -46,7 +46,7 @@ func (p *PostgresRepository) Close() []error {
 }
 
 func (p *PostgresRepository) createSchema(ctx context.Context) error {
-	var tables = []string{
+	tables := []string{
 		"CREATE EXTENSION IF NOT EXISTS pgcrypto",
 		"CREATE TABLE IF NOT EXISTS users (" +
 			"id SERIAL PRIMARY KEY, " +
@@ -132,6 +132,7 @@ func (p *PostgresRepository) UploadOrder(
 		order, login)
 	return err
 }
+
 func (p *PostgresRepository) Orders(
 	ctx context.Context,
 	login string,
