@@ -1,9 +1,10 @@
 package server
 
 import (
-	"VladBag2022/gophermart/internal/storage"
 	"fmt"
 	"net/http"
+
+	"VladBag2022/gophermart/internal/storage"
 )
 
 type Server struct {

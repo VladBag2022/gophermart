@@ -5,8 +5,8 @@ import (
 )
 
 type Config struct {
-	Address  string `env:"RUN_ADDRESS" envDefault:"localhost:8080"`
-	Accrual  string `env:"ACCRUAL_SYSTEM_ADDRESS"`
+	Address string `env:"RUN_ADDRESS" envDefault:"localhost:8080"`
+	Accrual string `env:"ACCRUAL_SYSTEM_ADDRESS"`
 }
 
 func NewConfig() (*Config, error) {

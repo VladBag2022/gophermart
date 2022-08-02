@@ -38,7 +38,7 @@ func makeTestRequest(t *testing.T, ts *httptest.Server, method, path string, bod
 
 func getTestServer(addExpectationsFunc func(repository *mocks.Repository)) *httptest.Server {
 	config, err := NewConfig()
-	if err != nil{
+	if err != nil {
 		return nil
 	}
 	repository := new(mocks.Repository)
@@ -144,7 +144,6 @@ func TestServer_register(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ts := getTestServer(func(repository *mocks.Repository) {
-
 			})
 			require.NotNil(t, ts)
 			defer ts.Close()
@@ -244,7 +243,6 @@ func TestServer_login(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ts := getTestServer(func(repository *mocks.Repository) {
-
 			})
 			require.NotNil(t, ts)
 			defer ts.Close()
@@ -367,7 +365,6 @@ func TestServer_upload_order(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ts := getTestServer(func(repository *mocks.Repository) {
-
 			})
 			require.NotNil(t, ts)
 			defer ts.Close()
@@ -438,7 +435,6 @@ func TestServer_list_orders(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ts := getTestServer(func(repository *mocks.Repository) {
-
 			})
 			require.NotNil(t, ts)
 			defer ts.Close()
@@ -491,7 +487,6 @@ func TestServer_balance(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ts := getTestServer(func(repository *mocks.Repository) {
-
 			})
 			require.NotNil(t, ts)
 			defer ts.Close()
@@ -605,7 +600,6 @@ func TestServer_withdraw(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ts := getTestServer(func(repository *mocks.Repository) {
-
 			})
 			require.NotNil(t, ts)
 			defer ts.Close()
@@ -675,7 +669,6 @@ func TestServer_withdrawals(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ts := getTestServer(func(repository *mocks.Repository) {
-
 			})
 			require.NotNil(t, ts)
 			defer ts.Close()

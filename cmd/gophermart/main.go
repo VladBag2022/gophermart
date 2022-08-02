@@ -1,7 +1,6 @@
 package main
 
 import (
-	"VladBag2022/gophermart/internal/storage"
 	"context"
 	"fmt"
 	"os"
@@ -12,6 +11,7 @@ import (
 	flag "github.com/spf13/pflag"
 
 	"VladBag2022/gophermart/internal/server"
+	"VladBag2022/gophermart/internal/storage"
 )
 
 func main() {
