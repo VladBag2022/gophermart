@@ -28,10 +28,7 @@ func NewPostgresRepository(
 }
 
 func (p *PostgresRepository) Ping(ctx context.Context) error {
-	if err := p.database.PingContext(ctx); err != nil {
-		return err
-	}
-	return nil
+	return p.database.PingContext(ctx)
 }
 
 func (p *PostgresRepository) Close() []error {
