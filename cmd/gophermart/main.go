@@ -29,16 +29,13 @@ func main() {
 	if len(*addressPtr) != 0 {
 		config.Address = *addressPtr
 	}
-	if len(*databasePtr) != 0 {
-		config.Database = *databasePtr
-	}
 	if len(*accrualPtr) != 0 {
 		config.Accrual = *accrualPtr
 	}
 
 	repository, err := storage.NewPostgresRepository(
 		context.Background(),
-		config.Database,
+		*databasePtr,
 	)
 	if err != nil {
 		log.Error(err)
