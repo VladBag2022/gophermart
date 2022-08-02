@@ -8,15 +8,24 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/mock"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"VladBag2022/gophermart/mocks"
 )
 
-func makeTestRequest(t *testing.T, ts *httptest.Server, method, path string, body io.Reader) (*http.Response, string) {
+func makeTestRequest(
+	t *testing.T,
+	ts *httptest.Server,
+	method, path, contentType string,
+	body io.Reader,
+) (*http.Response, string) {
 	req, err := http.NewRequest(method, ts.URL+path, body)
 	require.NoError(t, err)
+
+	req.Header.Set("Content-Type", contentType)
 
 	client := &http.Client{
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
@@ -36,16 +45,18 @@ func makeTestRequest(t *testing.T, ts *httptest.Server, method, path string, bod
 	return response, string(responseBody)
 }
 
-func getTestServer(addExpectationsFunc func(repository *mocks.Repository)) *httptest.Server {
+func getTestServerAndRepository(
+	addExpectationsFunc func(repository *mocks.Repository),
+) (*httptest.Server, *mocks.Repository) {
 	config, err := NewConfig()
 	if err != nil {
-		return nil
+		return nil, nil
 	}
 	repository := new(mocks.Repository)
 	addExpectationsFunc(repository)
 	server := NewServer(repository, config)
 	router := newRouter(server)
-	return httptest.NewServer(router)
+	return httptest.NewServer(router), repository
 }
 
 func TestServer_register(t *testing.T) {
@@ -143,12 +154,20 @@ func TestServer_register(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ts := getTestServer(func(repository *mocks.Repository) {
+			ts, _ := getTestServerAndRepository(func(repository *mocks.Repository) {
+				for _, login := range tt.logins {
+					repository.On("IsLoginAvailable",
+						mock.Anything, login).Return(false, nil)
+				}
+				repository.On("IsLoginAvailable",
+					mock.Anything, mock.Anything).Return(true, nil)
+				repository.On("Register",
+					mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			})
 			require.NotNil(t, ts)
 			defer ts.Close()
 
-			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/register",
+			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/register", tt.contentType,
 				strings.NewReader(tt.content))
 			err := response.Body.Close()
 			require.NoError(t, err)
@@ -242,12 +261,18 @@ func TestServer_login(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ts := getTestServer(func(repository *mocks.Repository) {
+			ts, _ := getTestServerAndRepository(func(repository *mocks.Repository) {
+				for _, tu := range tt.users {
+					repository.On("Login",
+						mock.Anything, tu.login, tu.password).Return(true, nil)
+				}
+				repository.On("Login",
+					mock.Anything, mock.Anything, mock.Anything).Return(false, nil)
 			})
 			require.NotNil(t, ts)
 			defer ts.Close()
 
-			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/login",
+			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/login", tt.contentType,
 				strings.NewReader(tt.content))
 			err := response.Body.Close()
 			require.NoError(t, err)
@@ -364,12 +389,12 @@ func TestServer_upload_order(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ts := getTestServer(func(repository *mocks.Repository) {
+			ts, _ := getTestServerAndRepository(func(repository *mocks.Repository) {
 			})
 			require.NotNil(t, ts)
 			defer ts.Close()
 
-			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/orders",
+			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/orders", tt.contentType,
 				strings.NewReader(tt.content))
 			err := response.Body.Close()
 			require.NoError(t, err)
@@ -434,12 +459,12 @@ func TestServer_list_orders(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ts := getTestServer(func(repository *mocks.Repository) {
+			ts, _ := getTestServerAndRepository(func(repository *mocks.Repository) {
 			})
 			require.NotNil(t, ts)
 			defer ts.Close()
 
-			response, content := makeTestRequest(t, ts, http.MethodGet, "/api/user/orders", nil)
+			response, content := makeTestRequest(t, ts, http.MethodGet, "/api/user/orders", "", nil)
 			err := response.Body.Close()
 			require.NoError(t, err)
 
@@ -486,12 +511,12 @@ func TestServer_balance(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ts := getTestServer(func(repository *mocks.Repository) {
+			ts, _ := getTestServerAndRepository(func(repository *mocks.Repository) {
 			})
 			require.NotNil(t, ts)
 			defer ts.Close()
 
-			response, content := makeTestRequest(t, ts, http.MethodGet, "/api/user/balance", nil)
+			response, content := makeTestRequest(t, ts, http.MethodGet, "/api/user/balance", "", nil)
 			err := response.Body.Close()
 			require.NoError(t, err)
 
@@ -599,12 +624,12 @@ func TestServer_withdraw(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ts := getTestServer(func(repository *mocks.Repository) {
+			ts, _ := getTestServerAndRepository(func(repository *mocks.Repository) {
 			})
 			require.NotNil(t, ts)
 			defer ts.Close()
 
-			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/balance/withdraw",
+			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/balance/withdraw", tt.contentType,
 				strings.NewReader(tt.content))
 			err := response.Body.Close()
 			require.NoError(t, err)
@@ -668,12 +693,12 @@ func TestServer_withdrawals(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ts := getTestServer(func(repository *mocks.Repository) {
+			ts, _ := getTestServerAndRepository(func(repository *mocks.Repository) {
 			})
 			require.NotNil(t, ts)
 			defer ts.Close()
 
-			response, content := makeTestRequest(t, ts, http.MethodPost, "/api/user/balance/withdraw", nil)
+			response, content := makeTestRequest(t, ts, http.MethodPost, "/api/user/balance/withdraw", "", nil)
 			err := response.Body.Close()
 			require.NoError(t, err)
 
