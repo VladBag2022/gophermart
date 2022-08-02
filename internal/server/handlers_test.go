@@ -10,6 +10,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"VladBag2022/gophermart/mocks"
 )
 
 func makeTestRequest(t *testing.T, ts *httptest.Server, method, path string, body io.Reader) (*http.Response, string) {
@@ -32,6 +34,18 @@ func makeTestRequest(t *testing.T, ts *httptest.Server, method, path string, bod
 	require.NoError(t, err)
 
 	return response, string(responseBody)
+}
+
+func getTestServer(addExpectationsFunc func(repository *mocks.Repository)) *httptest.Server {
+	config, err := NewConfig()
+	if err != nil{
+		return nil
+	}
+	repository := new(mocks.Repository)
+	addExpectationsFunc(repository)
+	server := NewServer(repository, config)
+	router := newRouter(server)
+	return httptest.NewServer(router)
 }
 
 func TestServer_register(t *testing.T) {
@@ -129,7 +143,10 @@ func TestServer_register(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ts := &httptest.Server{}
+			ts := getTestServer(func(repository *mocks.Repository) {
+
+			})
+			require.NotNil(t, ts)
 			defer ts.Close()
 
 			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/register",
@@ -226,7 +243,10 @@ func TestServer_login(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ts := &httptest.Server{}
+			ts := getTestServer(func(repository *mocks.Repository) {
+
+			})
+			require.NotNil(t, ts)
 			defer ts.Close()
 
 			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/login",
@@ -346,7 +366,10 @@ func TestServer_upload_order(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ts := &httptest.Server{}
+			ts := getTestServer(func(repository *mocks.Repository) {
+
+			})
+			require.NotNil(t, ts)
 			defer ts.Close()
 
 			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/orders",
@@ -414,7 +437,10 @@ func TestServer_list_orders(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ts := &httptest.Server{}
+			ts := getTestServer(func(repository *mocks.Repository) {
+
+			})
+			require.NotNil(t, ts)
 			defer ts.Close()
 
 			response, content := makeTestRequest(t, ts, http.MethodGet, "/api/user/orders", nil)
@@ -464,7 +490,10 @@ func TestServer_balance(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ts := &httptest.Server{}
+			ts := getTestServer(func(repository *mocks.Repository) {
+
+			})
+			require.NotNil(t, ts)
 			defer ts.Close()
 
 			response, content := makeTestRequest(t, ts, http.MethodGet, "/api/user/balance", nil)
@@ -575,7 +604,10 @@ func TestServer_withdraw(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ts := &httptest.Server{}
+			ts := getTestServer(func(repository *mocks.Repository) {
+
+			})
+			require.NotNil(t, ts)
 			defer ts.Close()
 
 			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/balance/withdraw",
@@ -642,7 +674,10 @@ func TestServer_withdrawals(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ts := &httptest.Server{}
+			ts := getTestServer(func(repository *mocks.Repository) {
+
+			})
+			require.NotNil(t, ts)
 			defer ts.Close()
 
 			response, content := makeTestRequest(t, ts, http.MethodPost, "/api/user/balance/withdraw", nil)
