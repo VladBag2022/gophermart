@@ -6,7 +6,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-func router(s Server) chi.Router {
+func newRouter(s Server) chi.Router {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
