@@ -9,7 +9,7 @@ import (
 )
 
 type PostgresRepository struct {
-	database       *sql.DB
+	database *sql.DB
 }
 
 func NewPostgresRepository(
@@ -21,7 +21,7 @@ func NewPostgresRepository(
 		return nil, err
 	}
 	var p = &PostgresRepository{
-		database:       db,
+		database: db,
 	}
 	err = p.createSchema(ctx)
 	return p, err
@@ -161,9 +161,9 @@ func (p *PostgresRepository) Balance(
 
 func (p *PostgresRepository) Withdraw(
 	ctx context.Context,
-	login 	string,
-	order 	int,
-	sum 	float64,
+	login string,
+	order int,
+	sum float64,
 ) error {
 	_, err := p.database.ExecContext(ctx,
 		"INSERT INTO orders (id, user_id, withdrawal) SELECT $1, id, $2 FROM users WHERE login = $3",

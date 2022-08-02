@@ -5,14 +5,14 @@ import (
 )
 
 type OrderInfo struct {
-	number 		int
-	status 		string
-	uploadedAt 	string
+	number     int
+	status     string
+	uploadedAt string
 }
 
 type WithdrawalInfo struct {
-	order 		int
-	sum 		float64
+	order       int
+	sum         float64
 	processedAt string
 }
 
@@ -55,9 +55,9 @@ type Repository interface {
 
 	Withdraw(
 		ctx context.Context,
-		login 	string,
-		order 	int,
-		sum 	float64,
+		login string,
+		order int,
+		sum float64,
 	) error
 
 	Withdrawals(
