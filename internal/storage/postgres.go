@@ -31,15 +31,8 @@ func (p *PostgresRepository) Ping(ctx context.Context) error {
 	return p.database.PingContext(ctx)
 }
 
-func (p *PostgresRepository) Close() []error {
-	var errs []error
-
-	err := p.database.Close()
-	if err != nil {
-		errs = append(errs, err)
-	}
-
-	return errs
+func (p *PostgresRepository) Close() error {
+	return p.database.Close()
 }
 
 func (p *PostgresRepository) createSchema(ctx context.Context) error {
