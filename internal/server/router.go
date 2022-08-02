@@ -17,8 +17,8 @@ func router(s Server) chi.Router {
 	r.Use(DecompressGZIP)
 	r.Use(gziphandler.GzipHandler)
 
-	// r.MethodNotAllowed(badRequestHandler)
-	// r.NotFound(badRequestHandler)
+	r.MethodNotAllowed(badRequestHandler)
+	r.NotFound(badRequestHandler)
 
 	return r
 }
