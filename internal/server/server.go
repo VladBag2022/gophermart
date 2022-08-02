@@ -2,6 +2,8 @@ package server
 
 import (
 	"VladBag2022/gophermart/internal/storage"
+	"fmt"
+	"net/http"
 )
 
 type Server struct {
@@ -16,9 +18,9 @@ func NewServer(repository storage.Repository, config *Config) Server {
 	}
 }
 
-//func (s Server) ListenAndServer() {
-//	if err := http.ListenAndServe(s.config.Address, router(s)); err != nil {
-//		fmt.Println(err)
-//		return
-//	}
-//}
+func (s Server) ListenAndServer() {
+	if err := http.ListenAndServe(s.config.Address, router(s)); err != nil {
+		fmt.Println(err)
+		return
+	}
+}
