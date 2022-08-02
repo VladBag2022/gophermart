@@ -36,94 +36,94 @@ func makeTestRequest(t *testing.T, ts *httptest.Server, method, path string, bod
 
 func TestServer_register(t *testing.T) {
 	type want struct {
-		statusCode  int
+		statusCode int
 	}
 	tests := []struct {
-		name    	string
-		logins		[]string
+		name        string
+		logins      []string
 		contentType string
-		content 	string
-		want    	want
+		content     string
+		want        want
 	}{
 		{
-			name:    		"positive test - some logins",
-			logins: 		[]string{"a", "b"},
-			contentType: 	"application/json",
-			content: 		"{\"login\": \"c\",\"password\": \"123\"}",
+			name:        "positive test - some logins",
+			logins:      []string{"a", "b"},
+			contentType: "application/json",
+			content:     "{\"login\": \"c\",\"password\": \"123\"}",
 			want: want{
-				statusCode:  200,
+				statusCode: 200,
 			},
 		},
 		{
-			name:    		"positive test - no logins",
-			logins: 		[]string{},
-			contentType: 	"application/json",
-			content: 		"{\"login\": \"c\",\"password\": \"123\"}",
+			name:        "positive test - no logins",
+			logins:      []string{},
+			contentType: "application/json",
+			content:     "{\"login\": \"c\",\"password\": \"123\"}",
 			want: want{
-				statusCode:  200,
+				statusCode: 200,
 			},
 		},
 		{
-			name:    		"negative test - empty login",
-			logins: 		[]string{},
-			contentType: 	"application/json",
-			content: 		"{\"login\": \"\",\"password\": \"123\"}",
+			name:        "negative test - empty login",
+			logins:      []string{},
+			contentType: "application/json",
+			content:     "{\"login\": \"\",\"password\": \"123\"}",
 			want: want{
-				statusCode:  400,
+				statusCode: 400,
 			},
 		},
 		{
-			name:    		"negative test - empty password",
-			logins: 		[]string{},
-			contentType: 	"application/json",
-			content: 		"{\"login\": \"c\",\"password\": \"\"}",
+			name:        "negative test - empty password",
+			logins:      []string{},
+			contentType: "application/json",
+			content:     "{\"login\": \"c\",\"password\": \"\"}",
 			want: want{
-				statusCode:  400,
+				statusCode: 400,
 			},
 		},
 		{
-			name:    		"negative test - empty login and password",
-			logins: 		[]string{},
-			contentType: 	"application/json",
-			content: 		"{\"login\": \"\",\"password\": \"\"}",
+			name:        "negative test - empty login and password",
+			logins:      []string{},
+			contentType: "application/json",
+			content:     "{\"login\": \"\",\"password\": \"\"}",
 			want: want{
-				statusCode:  400,
+				statusCode: 400,
 			},
 		},
 		{
-			name:    		"negative test - duplicate login",
-			logins: 		[]string{"a", "b"},
-			contentType: 	"application/json",
-			content: 		"{\"login\": \"a\",\"password\": \"123\"}",
+			name:        "negative test - duplicate login",
+			logins:      []string{"a", "b"},
+			contentType: "application/json",
+			content:     "{\"login\": \"a\",\"password\": \"123\"}",
 			want: want{
-				statusCode:  409,
+				statusCode: 409,
 			},
 		},
 		{
-			name:    		"negative test - wrong content type",
-			logins: 		[]string{},
-			contentType: 	"text/plain; charset=utf-8",
-			content: 		"{\"login\": \"\",\"password\": \"\"}",
+			name:        "negative test - wrong content type",
+			logins:      []string{},
+			contentType: "text/plain; charset=utf-8",
+			content:     "{\"login\": \"\",\"password\": \"\"}",
 			want: want{
-				statusCode:  400,
+				statusCode: 400,
 			},
 		},
 		{
-			name:    		"negative test - malformed content",
-			logins: 		[]string{"a", "b"},
-			contentType: 	"application/json",
-			content: 		"{\"login\": \"a\",\"password\": \"12",
+			name:        "negative test - malformed content",
+			logins:      []string{"a", "b"},
+			contentType: "application/json",
+			content:     "{\"login\": \"a\",\"password\": \"12",
 			want: want{
-				statusCode:  400,
+				statusCode: 400,
 			},
 		},
 		{
-			name:    		"negative test - wrong content",
-			logins: 		[]string{"a", "b"},
-			contentType: 	"application/json",
-			content: 		"{\"user\": \"a\",\"pass\": \"12\"}",
+			name:        "negative test - wrong content",
+			logins:      []string{"a", "b"},
+			contentType: "application/json",
+			content:     "{\"user\": \"a\",\"pass\": \"12\"}",
 			want: want{
-				statusCode:  400,
+				statusCode: 400,
 			},
 		},
 	}
@@ -144,83 +144,83 @@ func TestServer_register(t *testing.T) {
 
 func TestServer_login(t *testing.T) {
 	type want struct {
-		statusCode  int
+		statusCode int
 	}
 	type user struct {
-		login 	 	string
-		password 	string
+		login    string
+		password string
 	}
 	tests := []struct {
-		name    	string
-		users 		[]user
+		name        string
+		users       []user
 		contentType string
-		content 	string
-		want    	want
+		content     string
+		want        want
 	}{
 		{
-			name:    		"positive test",
-			users: 			[]user{
+			name: "positive test",
+			users: []user{
 				{"a", "123"},
 				{"b", "123"},
 				{"c", "123"},
 			},
-			contentType: 	"application/json",
-			content: 		"{\"login\": \"c\",\"password\": \"123\"}",
+			contentType: "application/json",
+			content:     "{\"login\": \"c\",\"password\": \"123\"}",
 			want: want{
-				statusCode:  200,
+				statusCode: 200,
 			},
 		},
 		{
-			name:    		"negative test - wrong password",
-			users: 			[]user{
+			name: "negative test - wrong password",
+			users: []user{
 				{"a", "123"},
 				{"b", "123"},
 				{"c", "123"},
 			},
-			contentType: 	"application/json",
-			content: 		"{\"login\": \"c\",\"password\": \"1234\"}",
+			contentType: "application/json",
+			content:     "{\"login\": \"c\",\"password\": \"1234\"}",
 			want: want{
-				statusCode:  401,
+				statusCode: 401,
 			},
 		},
 		{
-			name:    		"negative test - wrong login",
-			users: 			[]user{
+			name: "negative test - wrong login",
+			users: []user{
 				{"a", "123"},
 				{"b", "123"},
 				{"c", "123"},
 			},
-			contentType: 	"application/json",
-			content: 		"{\"login\": \"cd\",\"password\": \"1234\"}",
+			contentType: "application/json",
+			content:     "{\"login\": \"cd\",\"password\": \"1234\"}",
 			want: want{
-				statusCode:  401,
+				statusCode: 401,
 			},
 		},
 		{
-			name:    		"negative test - malformed content",
-			users: 			[]user{},
-			contentType: 	"application/json",
-			content: 		"{\"login\": \"cd\",\"password\": \"12",
+			name:        "negative test - malformed content",
+			users:       []user{},
+			contentType: "application/json",
+			content:     "{\"login\": \"cd\",\"password\": \"12",
 			want: want{
-				statusCode:  400,
+				statusCode: 400,
 			},
 		},
 		{
-			name:    		"negative test - wrong content type",
-			users: 			[]user{},
-			contentType: 	"text",
-			content: 		"{\"login\": \"cd\",\"password\": \"1234\"}",
+			name:        "negative test - wrong content type",
+			users:       []user{},
+			contentType: "text",
+			content:     "{\"login\": \"cd\",\"password\": \"1234\"}",
 			want: want{
-				statusCode:  400,
+				statusCode: 400,
 			},
 		},
 		{
-			name:    		"negative test - wrong content",
-			users: 			[]user{},
-			contentType: 	"application/json",
-			content: 		"{\"user\": \"cd\",\"pass\": \"1234\"}",
+			name:        "negative test - wrong content",
+			users:       []user{},
+			contentType: "application/json",
+			content:     "{\"user\": \"cd\",\"pass\": \"1234\"}",
 			want: want{
-				statusCode:  400,
+				statusCode: 400,
 			},
 		},
 	}
@@ -241,106 +241,106 @@ func TestServer_login(t *testing.T) {
 
 func TestServer_upload_order(t *testing.T) {
 	type want struct {
-		statusCode  int
+		statusCode int
 	}
 
 	tests := []struct {
-		name    	string
-		userOrders 	map[string][]int
-		user 		string
+		name        string
+		userOrders  map[string][]int
+		user        string
 		contentType string
-		content 	string
-		want    	want
+		content     string
+		want        want
 	}{
 		{
-			name:    		"positive test - order already uploaded",
-			userOrders:		map[string][]int{
+			name: "positive test - order already uploaded",
+			userOrders: map[string][]int{
 				"a": {123456789031, 566165445},
 				"b": {9579343, 58568287791534},
 			},
-			user:			"a",
-			contentType: 	"text/plain",
-			content: 		"123456789031",
+			user:        "a",
+			contentType: "text/plain",
+			content:     "123456789031",
 			want: want{
-				statusCode:  200,
+				statusCode: 200,
 			},
 		},
 		{
-			name:    		"positive test - new order",
-			userOrders:		map[string][]int{
+			name: "positive test - new order",
+			userOrders: map[string][]int{
 				"a": {123456789031, 566165445},
 				"b": {9579343, 58568287791534},
 			},
-			user:			"a",
-			contentType: 	"text/plain",
-			content: 		"123456789032",
+			user:        "a",
+			contentType: "text/plain",
+			content:     "123456789032",
 			want: want{
-				statusCode:  200,
+				statusCode: 200,
 			},
 		},
 		{
-			name:    		"negative test - wrong content type",
-			userOrders:		map[string][]int{
+			name: "negative test - wrong content type",
+			userOrders: map[string][]int{
 				"a": {123456789031, 566165445},
 				"b": {9579343, 58568287791534},
 			},
-			user:			"a",
-			contentType: 	"application/json",
-			content: 		"123456789032",
+			user:        "a",
+			contentType: "application/json",
+			content:     "123456789032",
 			want: want{
-				statusCode:  400,
+				statusCode: 400,
 			},
 		},
 		{
-			name:    		"negative test - wrong content",
-			userOrders:		map[string][]int{
+			name: "negative test - wrong content",
+			userOrders: map[string][]int{
 				"a": {123456789031, 566165445},
 				"b": {9579343, 58568287791534},
 			},
-			user:			"a",
-			contentType: 	"text/plain",
-			content: 		"gg",
+			user:        "a",
+			contentType: "text/plain",
+			content:     "gg",
 			want: want{
-				statusCode:  400,
+				statusCode: 400,
 			},
 		},
 		{
-			name:    		"negative test - unauthorized",
-			userOrders:		map[string][]int{
+			name: "negative test - unauthorized",
+			userOrders: map[string][]int{
 				"a": {123456789031, 566165445},
 				"b": {9579343, 58568287791534},
 			},
-			user:			"",
-			contentType: 	"text/plain",
-			content: 		"123",
+			user:        "",
+			contentType: "text/plain",
+			content:     "123",
 			want: want{
-				statusCode:  401,
+				statusCode: 401,
 			},
 		},
 		{
-			name:    		"negative test - order already uploaded by another user",
-			userOrders:		map[string][]int{
+			name: "negative test - order already uploaded by another user",
+			userOrders: map[string][]int{
 				"a": {123456789031, 566165445},
 				"b": {9579343, 58568287791534},
 			},
-			user:			"b",
-			contentType: 	"text/plain",
-			content: 		"123456789031",
+			user:        "b",
+			contentType: "text/plain",
+			content:     "123456789031",
 			want: want{
-				statusCode:  409,
+				statusCode: 409,
 			},
 		},
 		{
-			name:    		"negative test - bad Luhn check",
-			userOrders:		map[string][]int{
+			name: "negative test - bad Luhn check",
+			userOrders: map[string][]int{
 				"a": {123456789031, 566165445},
 				"b": {9579343, 58568287791534},
 			},
-			user:			"b",
-			contentType: 	"text/plain",
-			content: 		"123456789035",
+			user:        "b",
+			contentType: "text/plain",
+			content:     "123456789035",
 			want: want{
-				statusCode:  422,
+				statusCode: 422,
 			},
 		},
 	}
@@ -363,52 +363,52 @@ func TestServer_list_orders(t *testing.T) {
 	type want struct {
 		statusCode  int
 		contentType string
-		content 	bool
+		content     bool
 	}
 
 	tests := []struct {
-		name    	string
-		userOrders 	map[string]bool
-		user 		string
-		want    	want
+		name       string
+		userOrders map[string]bool
+		user       string
+		want       want
 	}{
 		{
-			name:    		"positive test - data is presented",
-			userOrders:		map[string]bool{
+			name: "positive test - data is presented",
+			userOrders: map[string]bool{
 				"a": true,
 				"b": false,
 			},
-			user:			"a",
+			user: "a",
 			want: want{
-				statusCode:		200,
-				contentType: 	"application/json",
-				content: 	 	true,
+				statusCode:  200,
+				contentType: "application/json",
+				content:     true,
 			},
 		},
 		{
-			name:    		"positive test - no data",
-			userOrders:		map[string]bool{
+			name: "positive test - no data",
+			userOrders: map[string]bool{
 				"a": true,
 				"b": false,
 			},
-			user:			"b",
+			user: "b",
 			want: want{
-				statusCode:		204,
-				contentType: 	"",
-				content: 	 	false,
+				statusCode:  204,
+				contentType: "",
+				content:     false,
 			},
 		},
 		{
-			name:    		"negative test - unauthorized",
-			userOrders:		map[string]bool{
+			name: "negative test - unauthorized",
+			userOrders: map[string]bool{
 				"a": true,
 				"b": false,
 			},
-			user:			"c",
+			user: "c",
 			want: want{
-				statusCode:		401,
-				contentType: 	"",
-				content: 	 	false,
+				statusCode:  401,
+				contentType: "",
+				content:     false,
 			},
 		},
 	}
@@ -432,33 +432,33 @@ func TestServer_balance(t *testing.T) {
 	type want struct {
 		statusCode  int
 		contentType string
-		content 	bool
+		content     bool
 	}
 
 	tests := []struct {
-		name    	string
-		users 		[]string
-		user 		string
-		want    	want
+		name  string
+		users []string
+		user  string
+		want  want
 	}{
 		{
-			name:    		"positive test",
-			users: 			[]string{"a", "b"},
-			user:			"a",
+			name:  "positive test",
+			users: []string{"a", "b"},
+			user:  "a",
 			want: want{
-				statusCode:		200,
-				contentType: 	"application/json",
-				content: 	 	true,
+				statusCode:  200,
+				contentType: "application/json",
+				content:     true,
 			},
 		},
 		{
-			name:    		"negative test - unauthorized",
-			users: 			[]string{"a", "b"},
-			user:			"c",
+			name:  "negative test - unauthorized",
+			users: []string{"a", "b"},
+			user:  "c",
 			want: want{
-				statusCode:		401,
-				contentType: 	"",
-				content: 	 	false,
+				statusCode:  401,
+				contentType: "",
+				content:     false,
 			},
 		},
 	}
@@ -480,96 +480,96 @@ func TestServer_balance(t *testing.T) {
 
 func TestServer_withdraw(t *testing.T) {
 	type want struct {
-		statusCode  int
+		statusCode int
 	}
 	tests := []struct {
-		name    		string
-		userBalances	map[string]float64
-		user 			string
-		contentType 	string
-		content 		string
-		want    		want
+		name         string
+		userBalances map[string]float64
+		user         string
+		contentType  string
+		content      string
+		want         want
 	}{
 		{
-			name:    		"positive test",
-			userBalances: 	map[string]float64{
+			name: "positive test",
+			userBalances: map[string]float64{
 				"a": 100.0,
 				"b": 200.0,
 			},
-			user: 			"a",
-			contentType: 	"application/json",
-			content: 		"{\"order\": \"2377225624\",\"sum\": \"10\"}",
+			user:        "a",
+			contentType: "application/json",
+			content:     "{\"order\": \"2377225624\",\"sum\": \"10\"}",
 			want: want{
-				statusCode:  200,
+				statusCode: 200,
 			},
 		},
 		{
-			name:    		"negative test - malformed content",
-			userBalances: 	map[string]float64{},
-			user: 			"a",
-			contentType: 	"application/json",
-			content: 		"{\"login\": \"cd\",\"password\": \"12",
+			name:         "negative test - malformed content",
+			userBalances: map[string]float64{},
+			user:         "a",
+			contentType:  "application/json",
+			content:      "{\"login\": \"cd\",\"password\": \"12",
 			want: want{
-				statusCode:  400,
+				statusCode: 400,
 			},
 		},
 		{
-			name:    		"negative test - wrong content type",
-			userBalances: 	map[string]float64{},
-			user: 			"a",
-			contentType: 	"text",
-			content: 		"{\"order\": \"cd\",\"sum\": \"1234\"}",
+			name:         "negative test - wrong content type",
+			userBalances: map[string]float64{},
+			user:         "a",
+			contentType:  "text",
+			content:      "{\"order\": \"cd\",\"sum\": \"1234\"}",
 			want: want{
-				statusCode:  400,
+				statusCode: 400,
 			},
 		},
 		{
-			name:    		"negative test - wrong content",
-			userBalances: 	map[string]float64{},
-			user: 			"a",
-			contentType: 	"application/json",
-			content: 		"{\"user\": \"cd\",\"pass\": \"1234\"}",
+			name:         "negative test - wrong content",
+			userBalances: map[string]float64{},
+			user:         "a",
+			contentType:  "application/json",
+			content:      "{\"user\": \"cd\",\"pass\": \"1234\"}",
 			want: want{
-				statusCode:  400,
+				statusCode: 400,
 			},
 		},
 		{
-			name:    		"negative test - unauthorized",
-			userBalances: 	map[string]float64{
+			name: "negative test - unauthorized",
+			userBalances: map[string]float64{
 				"a": 100,
 				"b": 200,
 			},
-			user: 			"c",
-			contentType: 	"application/json",
-			content: 		"{\"order\": \"2377225624\",\"sum\": \"10\"}",
+			user:        "c",
+			contentType: "application/json",
+			content:     "{\"order\": \"2377225624\",\"sum\": \"10\"}",
 			want: want{
-				statusCode:  401,
+				statusCode: 401,
 			},
 		},
 		{
-			name:    		"negative test - low balance",
-			userBalances: 	map[string]float64{
+			name: "negative test - low balance",
+			userBalances: map[string]float64{
 				"a": 100,
 				"b": 200,
 			},
-			user: 			"a",
-			contentType: 	"application/json",
-			content: 		"{\"order\": \"2377225624\",\"sum\": \"1000\"}",
+			user:        "a",
+			contentType: "application/json",
+			content:     "{\"order\": \"2377225624\",\"sum\": \"1000\"}",
 			want: want{
-				statusCode:  402,
+				statusCode: 402,
 			},
 		},
 		{
-			name:    		"negative test - wrong order number",
-			userBalances: 	map[string]float64{
+			name: "negative test - wrong order number",
+			userBalances: map[string]float64{
 				"a": 100,
 				"b": 200,
 			},
-			user: 			"a",
-			contentType: 	"application/json",
-			content: 		"{\"order\": \"2377225626\",\"sum\": \"10\"}",
+			user:        "a",
+			contentType: "application/json",
+			content:     "{\"order\": \"2377225626\",\"sum\": \"10\"}",
 			want: want{
-				statusCode:  422,
+				statusCode: 422,
 			},
 		},
 	}
@@ -592,51 +592,51 @@ func TestServer_withdrawals(t *testing.T) {
 	type want struct {
 		statusCode  int
 		contentType string
-		content 	bool
+		content     bool
 	}
 	tests := []struct {
-		name    		string
-		userWithdrawals	map[string]bool
-		user 			string
-		want    		want
+		name            string
+		userWithdrawals map[string]bool
+		user            string
+		want            want
 	}{
 		{
-			name:    		"positive test - withdrawals found",
-			userWithdrawals: 	map[string]bool{
+			name: "positive test - withdrawals found",
+			userWithdrawals: map[string]bool{
 				"a": true,
 				"b": false,
 			},
-			user: 			"a",
+			user: "a",
 			want: want{
-				statusCode:  	200,
-				contentType: 	"application/json",
-				content: 		true,
+				statusCode:  200,
+				contentType: "application/json",
+				content:     true,
 			},
 		},
 		{
-			name:    		"positive test - no withdrawals",
-			userWithdrawals: 	map[string]bool{
+			name: "positive test - no withdrawals",
+			userWithdrawals: map[string]bool{
 				"a": true,
 				"b": false,
 			},
-			user: 			"b",
+			user: "b",
 			want: want{
-				statusCode:  	204,
-				contentType: 	"",
-				content: 		false,
+				statusCode:  204,
+				contentType: "",
+				content:     false,
 			},
 		},
 		{
-			name:    		"negative test - unauthorized",
-			userWithdrawals: 	map[string]bool{
+			name: "negative test - unauthorized",
+			userWithdrawals: map[string]bool{
 				"a": true,
 				"b": false,
 			},
-			user: 			"c",
+			user: "c",
 			want: want{
-				statusCode:  	401,
-				contentType: 	"",
-				content: 		false,
+				statusCode:  401,
+				contentType: "",
+				content:     false,
 			},
 		},
 	}
