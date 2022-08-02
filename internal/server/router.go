@@ -19,6 +19,7 @@ func newRouter(s Server) chi.Router {
 
 	r.Post("/api/user/register", registerHandler(s))
 	r.Post("/api/user/login", loginHandler(s))
+	r.Post("/api/user/orders", uploadHandler(s))
 
 	r.MethodNotAllowed(badRequestHandler)
 	r.NotFound(badRequestHandler)

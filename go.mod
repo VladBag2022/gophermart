@@ -12,6 +12,7 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.5.1
+	github.com/theplant/luhn v0.0.0-20170224032821-81a1a381387a
 )
 
 require (

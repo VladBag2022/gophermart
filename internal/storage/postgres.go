@@ -106,6 +106,9 @@ func (p *PostgresRepository) OrderOwner(
 		"SELECT login FROM users JOIN orders ON users.id = orders.user_id AND orders.id = $1",
 		order)
 	err = row.Scan(&login)
+	if err == sql.ErrNoRows {
+		return "", nil
+	}
 	if err != nil {
 		return "", err
 	}

@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -19,13 +20,17 @@ import (
 func makeTestRequest(
 	t *testing.T,
 	ts *httptest.Server,
-	method, path, contentType string,
+	method, path, contentType, authentication string,
 	body io.Reader,
 ) (*http.Response, string) {
 	req, err := http.NewRequest(method, ts.URL+path, body)
 	require.NoError(t, err)
 
 	req.Header.Set("Content-Type", contentType)
+
+	if len(authentication) > 0 {
+		req.Header.Set("Authentication", authentication)
+	}
 
 	client := &http.Client{
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
@@ -45,18 +50,18 @@ func makeTestRequest(
 	return response, string(responseBody)
 }
 
-func getTestServerAndRepository(
+func getTestEntities(
 	addExpectationsFunc func(repository *mocks.Repository),
-) (*httptest.Server, *mocks.Repository) {
+) (*mocks.Repository, *Server, *httptest.Server) {
 	config, err := NewConfig()
 	if err != nil {
-		return nil, nil
+		return nil, nil, nil
 	}
 	repository := new(mocks.Repository)
 	addExpectationsFunc(repository)
 	server := NewServer(repository, config)
 	router := newRouter(server)
-	return httptest.NewServer(router), repository
+	return repository, &server, httptest.NewServer(router)
 }
 
 func TestServer_register(t *testing.T) {
@@ -154,7 +159,7 @@ func TestServer_register(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ts, _ := getTestServerAndRepository(func(repository *mocks.Repository) {
+			_, _, ts := getTestEntities(func(repository *mocks.Repository) {
 				for _, login := range tt.logins {
 					repository.On("IsLoginAvailable",
 						mock.Anything, login).Return(false, nil)
@@ -167,7 +172,7 @@ func TestServer_register(t *testing.T) {
 			require.NotNil(t, ts)
 			defer ts.Close()
 
-			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/register", tt.contentType,
+			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/register", tt.contentType, "",
 				strings.NewReader(tt.content))
 			err := response.Body.Close()
 			require.NoError(t, err)
@@ -261,7 +266,7 @@ func TestServer_login(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ts, _ := getTestServerAndRepository(func(repository *mocks.Repository) {
+			_, _, ts := getTestEntities(func(repository *mocks.Repository) {
 				for _, tu := range tt.users {
 					repository.On("Login",
 						mock.Anything, tu.login, tu.password).Return(true, nil)
@@ -272,7 +277,7 @@ func TestServer_login(t *testing.T) {
 			require.NotNil(t, ts)
 			defer ts.Close()
 
-			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/login", tt.contentType,
+			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/login", tt.contentType, "",
 				strings.NewReader(tt.content))
 			err := response.Body.Close()
 			require.NoError(t, err)
@@ -282,7 +287,7 @@ func TestServer_login(t *testing.T) {
 	}
 }
 
-func TestServer_upload_order(t *testing.T) {
+func TestServer_upload(t *testing.T) {
 	type want struct {
 		statusCode int
 	}
@@ -316,9 +321,9 @@ func TestServer_upload_order(t *testing.T) {
 			},
 			user:        "a",
 			contentType: "text/plain",
-			content:     "123456789032",
+			content:     "12345678903",
 			want: want{
-				statusCode: 200,
+				statusCode: 202,
 			},
 		},
 		{
@@ -344,7 +349,7 @@ func TestServer_upload_order(t *testing.T) {
 			contentType: "text/plain",
 			content:     "gg",
 			want: want{
-				statusCode: 400,
+				statusCode: 422,
 			},
 		},
 		{
@@ -389,13 +394,40 @@ func TestServer_upload_order(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ts, _ := getTestServerAndRepository(func(repository *mocks.Repository) {
+			orderUploaded := false
+			userRegistered := false
+			_, s, ts := getTestEntities(func(repository *mocks.Repository) {
+				for tUser, tOrders := range tt.userOrders {
+					for _, tOrder := range tOrders {
+						repository.On("OrderOwner", mock.Anything, tOrder).Return(tUser, nil)
+						if strconv.Itoa(tOrder) == tt.content {
+							orderUploaded = true
+						}
+					}
+					if tUser == tt.user{
+						userRegistered = true
+					}
+				}
+				if !orderUploaded {
+					order, err := strconv.Atoi(tt.content)
+					if err == nil {
+						repository.On("OrderOwner", mock.Anything, order).Return("", nil)
+					}
+				}
+				repository.On("UploadOrder", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			})
 			require.NotNil(t, ts)
 			defer ts.Close()
 
+			h := ""
+			if userRegistered {
+				nh, err := getAuthHeader(*s, tt.user)
+				require.NoError(t, err)
+				h = nh
+			}
+
 			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/orders", tt.contentType,
-				strings.NewReader(tt.content))
+				h, strings.NewReader(tt.content))
 			err := response.Body.Close()
 			require.NoError(t, err)
 
@@ -404,7 +436,7 @@ func TestServer_upload_order(t *testing.T) {
 	}
 }
 
-func TestServer_list_orders(t *testing.T) {
+func TestServer_list(t *testing.T) {
 	type want struct {
 		statusCode  int
 		contentType string
@@ -459,12 +491,12 @@ func TestServer_list_orders(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ts, _ := getTestServerAndRepository(func(repository *mocks.Repository) {
+			_, _, ts := getTestEntities(func(repository *mocks.Repository) {
 			})
 			require.NotNil(t, ts)
 			defer ts.Close()
 
-			response, content := makeTestRequest(t, ts, http.MethodGet, "/api/user/orders", "", nil)
+			response, content := makeTestRequest(t, ts, http.MethodGet, "/api/user/orders", "",  "",nil)
 			err := response.Body.Close()
 			require.NoError(t, err)
 
@@ -511,12 +543,12 @@ func TestServer_balance(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ts, _ := getTestServerAndRepository(func(repository *mocks.Repository) {
+			_, _, ts := getTestEntities(func(repository *mocks.Repository) {
 			})
 			require.NotNil(t, ts)
 			defer ts.Close()
 
-			response, content := makeTestRequest(t, ts, http.MethodGet, "/api/user/balance", "", nil)
+			response, content := makeTestRequest(t, ts, http.MethodGet, "/api/user/balance", "", "",nil)
 			err := response.Body.Close()
 			require.NoError(t, err)
 
@@ -624,12 +656,12 @@ func TestServer_withdraw(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ts, _ := getTestServerAndRepository(func(repository *mocks.Repository) {
+			_, _, ts := getTestEntities(func(repository *mocks.Repository) {
 			})
 			require.NotNil(t, ts)
 			defer ts.Close()
 
-			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/balance/withdraw", tt.contentType,
+			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/balance/withdraw", tt.contentType, "",
 				strings.NewReader(tt.content))
 			err := response.Body.Close()
 			require.NoError(t, err)
@@ -693,12 +725,12 @@ func TestServer_withdrawals(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ts, _ := getTestServerAndRepository(func(repository *mocks.Repository) {
+			_, _, ts := getTestEntities(func(repository *mocks.Repository) {
 			})
 			require.NotNil(t, ts)
 			defer ts.Close()
 
-			response, content := makeTestRequest(t, ts, http.MethodPost, "/api/user/balance/withdraw", "", nil)
+			response, content := makeTestRequest(t, ts, http.MethodPost, "/api/user/balance/withdraw", "", "", nil)
 			err := response.Body.Close()
 			require.NoError(t, err)
 
