@@ -7,6 +7,7 @@ require (
 	github.com/caarlos0/env/v6 v6.9.3
 	github.com/georgysavva/scany v1.1.0
 	github.com/go-chi/chi/v5 v5.0.7
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/jackc/pgx/v4 v4.10.1
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/pflag v1.0.5

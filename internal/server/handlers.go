@@ -2,13 +2,35 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
+	"time"
+
+	"github.com/golang-jwt/jwt"
 )
 
 type UserAuthRequest struct {
 	Login    string `json:"login"`
 	Password string `json:"password"`
+}
+
+type AuthClaims struct {
+	Login string `json:"login"`
+	jwt.StandardClaims
+}
+
+func getAuthJWT(s Server, login string) (token string, err error) {
+	claims := AuthClaims{
+		login,
+		jwt.StandardClaims{
+			IssuedAt:  time.Now().Unix(),
+			ExpiresAt: time.Now().Unix() + int64(time.Hour / time.Second),
+		},
+	}
+
+	t := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return t.SignedString([]byte(s.config.JWTKey))
 }
 
 func badRequestHandler(w http.ResponseWriter, _ *http.Request) {
@@ -61,6 +83,13 @@ func registerHandler(s Server) http.HandlerFunc {
 			return
 		}
 
+		token, err := getAuthJWT(s, request.Login)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Authentication", fmt.Sprintf("Bearer %s", token))
 		w.WriteHeader(http.StatusOK)
 	}
 }
@@ -105,6 +134,13 @@ func loginHandler(s Server) http.HandlerFunc {
 			return
 		}
 
+		token, err := getAuthJWT(s, request.Login)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Authentication", fmt.Sprintf("Bearer %s", token))
 		w.WriteHeader(http.StatusOK)
 	}
 }
