@@ -185,7 +185,7 @@ func uploadHandler(s Server) http.HandlerFunc {
 			return
 		}
 
-		jwtOwner, _ := r.Context().Value("login").(string)
+		jwtOwner, _ := r.Context().Value("jwtLogin").(string)
 
 		if owner == jwtOwner {
 			w.WriteHeader(http.StatusOK)

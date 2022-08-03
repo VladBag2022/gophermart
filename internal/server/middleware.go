@@ -49,7 +49,7 @@ func CheckJWT(s Server) func(next http.Handler) http.Handler {
 			}
 
 			if claims, ok := token.Claims.(*AuthClaims); ok && token.Valid {
-				ctx := context.WithValue(r.Context(), "login", claims.Login)
+				ctx := context.WithValue(r.Context(), "jwtLogin", claims.Login)
 
 				// Access login in handlers like this
 				// login, _ := r.Context().Value("login").(string)
