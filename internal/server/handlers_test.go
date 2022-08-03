@@ -52,16 +52,16 @@ func makeTestRequest(
 
 func getTestEntities(
 	addExpectationsFunc func(repository *mocks.Repository),
-) (*mocks.Repository, *Server, *httptest.Server) {
+) (*Server, *httptest.Server) {
 	config, err := NewConfig()
 	if err != nil {
-		return nil, nil, nil
+		return nil, nil
 	}
 	repository := new(mocks.Repository)
 	addExpectationsFunc(repository)
 	server := NewServer(repository, config)
 	router := rootRouter(server)
-	return repository, &server, httptest.NewServer(router)
+	return &server, httptest.NewServer(router)
 }
 
 func TestServer_register(t *testing.T) {
@@ -159,7 +159,7 @@ func TestServer_register(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, _, ts := getTestEntities(func(repository *mocks.Repository) {
+			_, ts := getTestEntities(func(repository *mocks.Repository) {
 				for _, login := range tt.logins {
 					repository.On("IsLoginAvailable",
 						mock.Anything, login).Return(false, nil)
@@ -266,7 +266,7 @@ func TestServer_login(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, _, ts := getTestEntities(func(repository *mocks.Repository) {
+			_, ts := getTestEntities(func(repository *mocks.Repository) {
 				for _, tu := range tt.users {
 					repository.On("Login",
 						mock.Anything, tu.login, tu.password).Return(true, nil)
@@ -396,7 +396,7 @@ func TestServer_upload(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			orderUploaded := false
 			userRegistered := false
-			_, s, ts := getTestEntities(func(repository *mocks.Repository) {
+			s, ts := getTestEntities(func(repository *mocks.Repository) {
 				for tUser, tOrders := range tt.userOrders {
 					for _, tOrder := range tOrders {
 						repository.On("OrderOwner", mock.Anything, tOrder).Return(tUser, nil)
@@ -492,7 +492,7 @@ func TestServer_list(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			userRegistered := false
-			_, s, ts := getTestEntities(func(repository *mocks.Repository) {
+			s, ts := getTestEntities(func(repository *mocks.Repository) {
 				for tUser, tOrder := range tt.userOrders {
 					if tOrder {
 						repository.On("Orders", mock.Anything, tUser).Return([]storage.OrderInfo{
@@ -568,7 +568,7 @@ func TestServer_balance(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			userRegistered := false
-			_, s, ts := getTestEntities(func(repository *mocks.Repository) {
+			s, ts := getTestEntities(func(repository *mocks.Repository) {
 				for _, tUser := range tt.users {
 					repository.On("Balance", mock.Anything, tUser).Return(storage.BalanceInfo{
 						Current:   0.0,
@@ -707,7 +707,7 @@ func TestServer_withdraw(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			userRegistered := false
-			_, s, ts := getTestEntities(func(repository *mocks.Repository) {
+			s, ts := getTestEntities(func(repository *mocks.Repository) {
 				for tUser, tBalance := range tt.userBalances {
 					repository.On("Balance", mock.Anything, tUser).Return(storage.BalanceInfo{
 						Current:   tBalance,
@@ -794,7 +794,7 @@ func TestServer_withdrawals(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			userRegistered := false
-			_, s, ts := getTestEntities(func(repository *mocks.Repository) {
+			s, ts := getTestEntities(func(repository *mocks.Repository) {
 				for tUser, tWithdrawal := range tt.userWithdrawals {
 					if tWithdrawal {
 						repository.On("Withdrawals", mock.Anything, tUser).Return([]storage.WithdrawalInfo{
