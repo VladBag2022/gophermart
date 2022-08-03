@@ -105,7 +105,7 @@ func registerHandler(s Server) http.HandlerFunc {
 			return
 		}
 
-		w.Header().Set("Authentication", header)
+		w.Header().Set(authorizationHeader, header)
 		w.WriteHeader(http.StatusOK)
 	}
 }
@@ -156,7 +156,7 @@ func loginHandler(s Server) http.HandlerFunc {
 			return
 		}
 
-		w.Header().Set("Authentication", header)
+		w.Header().Set(authorizationHeader, header)
 		w.WriteHeader(http.StatusOK)
 	}
 }

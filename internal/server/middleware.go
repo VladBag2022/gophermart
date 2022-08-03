@@ -27,7 +27,7 @@ func DecompressGZIP(next http.Handler) http.Handler {
 func CheckJWT(s Server) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			authHeader := r.Header.Get("Authentication")
+			authHeader := r.Header.Get(authorizationHeader)
 			if len(authHeader) == 0 {
 				w.WriteHeader(http.StatusUnauthorized)
 				return

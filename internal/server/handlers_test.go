@@ -20,7 +20,7 @@ import (
 func makeTestRequest(
 	t *testing.T,
 	ts *httptest.Server,
-	method, path, contentType, authentication string,
+	method, path, contentType, authorization string,
 	body io.Reader,
 ) (*http.Response, string) {
 	req, err := http.NewRequest(method, ts.URL+path, body)
@@ -28,8 +28,8 @@ func makeTestRequest(
 
 	req.Header.Set("Content-Type", contentType)
 
-	if len(authentication) > 0 {
-		req.Header.Set("Authentication", authentication)
+	if len(authorization) > 0 {
+		req.Header.Set(authorizationHeader, authorization)
 	}
 
 	client := &http.Client{
