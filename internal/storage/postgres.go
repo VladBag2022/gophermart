@@ -43,7 +43,7 @@ func (p *PostgresRepository) createSchema(ctx context.Context) error {
 			"login TEXT NOT NULL UNIQUE, " +
 			"password TEXT NOT NULL)",
 		"CREATE TABLE IF NOT EXISTS orders (" +
-			"id INTEGER PRIMARY KEY, " +
+			"id BIGINT PRIMARY KEY, " +
 			"user_id INTEGER NOT NULL, " +
 			"uploaded_at TIMESTAMP NOT NULL DEFAULT Now(), " +
 			"status TEXT NOT NULL DEFAULT 'NEW', " +
