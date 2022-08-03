@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	log "github.com/sirupsen/logrus"
 	"github.com/theplant/luhn"
 )
 
@@ -236,7 +237,7 @@ func listHandler(s Server) http.HandlerFunc {
 
 		_, err = w.Write(response)
 		if err != nil {
-			// log in prod
+			log.Trace("Log in prod")
 		}
 	}
 }
@@ -262,7 +263,7 @@ func balanceHandler(s Server) http.HandlerFunc {
 
 		_, err = w.Write(response)
 		if err != nil {
-			// log in prod
+			log.Trace("Log in prod")
 		}
 	}
 }
@@ -351,7 +352,7 @@ func withdrawalsHandler(s Server) http.HandlerFunc {
 
 		_, err = w.Write(response)
 		if err != nil {
-			// log in prod
+			log.Trace("Log in prod")
 		}
 	}
 }
