@@ -46,7 +46,7 @@ func (p *PostgresRepository) createSchema(ctx context.Context) error {
 			"id INTEGER PRIMARY KEY, " +
 			"user_id INTEGER NOT NULL, " +
 			"uploaded_at TIMESTAMP NOT NULL DEFAULT Now(), " +
-			"status TEXT NOT NULL DEFAULT \"NEW\", " +
+			"status TEXT NOT NULL DEFAULT 'NEW', " +
 			"accrual REAL, " +
 			"withdrawal REAL, " +
 			"FOREIGN KEY (user_id) REFERENCES users (id))",
