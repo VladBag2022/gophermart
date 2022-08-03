@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -401,7 +400,7 @@ func TestServer_upload(t *testing.T) {
 				for tUser, tOrders := range tt.userOrders {
 					for _, tOrder := range tOrders {
 						repository.On("OrderOwner", mock.Anything, tOrder).Return(tUser, nil)
-						if fmt.Sprintf("%d", tOrder) == tt.content {
+						if strconv.FormatInt(tOrder, 10) == tt.content {
 							orderUploaded = true
 						}
 					}
@@ -410,7 +409,7 @@ func TestServer_upload(t *testing.T) {
 					}
 				}
 				if !orderUploaded {
-					order, err := strconv.Atoi(tt.content)
+					order, err := strconv.ParseInt(tt.content, 10, 64)
 					if err == nil {
 						repository.On("OrderOwner", mock.Anything, order).Return("", nil)
 					}
@@ -472,8 +471,8 @@ func TestServer_list(t *testing.T) {
 			user: "b",
 			want: want{
 				statusCode:  204,
-				contentType: "",
-				content:     false,
+				contentType: contentTypeJSON,
+				content:     true,
 			},
 		},
 		{
@@ -774,8 +773,8 @@ func TestServer_withdrawals(t *testing.T) {
 			user: "b",
 			want: want{
 				statusCode:  204,
-				contentType: "",
-				content:     false,
+				contentType: contentTypeJSON,
+				content:     true,
 			},
 		},
 		{

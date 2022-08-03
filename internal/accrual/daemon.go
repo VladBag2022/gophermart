@@ -1,27 +1,28 @@
 package accrual
 
 import (
-	"VladBag2022/gophermart/internal/storage"
 	"context"
 	"time"
+
+	"VladBag2022/gophermart/internal/storage"
 )
 
 type Daemon struct {
-	repository storage.Repository
+	repository     storage.Repository
 	accrualAddress string
 }
 
 func NewDaemon(repository storage.Repository, accrualAddress string) Daemon {
 	return Daemon{
-		repository: repository,
-		accrualAddress:     accrualAddress,
+		repository:     repository,
+		accrualAddress: accrualAddress,
 	}
 }
 
 func (d Daemon) Start(ctx context.Context) error {
 	for {
 		select {
-		case <- ctx.Done():
+		case <-ctx.Done():
 			return nil
 		default:
 			orders, err := d.repository.AccrualOrders(ctx)
@@ -34,7 +35,7 @@ func (d Daemon) Start(ctx context.Context) error {
 					return err
 				}
 				if info == nil {
-					select{
+					select {
 					case <-ctx.Done():
 						return nil
 					case <-time.After(time.Duration(retryAfter) * time.Second):

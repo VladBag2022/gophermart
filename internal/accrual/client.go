@@ -9,9 +9,9 @@ import (
 )
 
 type orderInfoResponse struct {
-	Order     int     `json:"order"`
-	Status     string  `json:"status"`
-	Accrual    float64 `json:"accrual"`
+	Order   int     `json:"order"`
+	Status  string  `json:"status"`
+	Accrual float64 `json:"accrual"`
 }
 
 func (d Daemon) orderInfo(order int64) (info *orderInfoResponse, retryAfter int, err error) {

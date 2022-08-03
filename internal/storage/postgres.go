@@ -174,9 +174,10 @@ func (p *PostgresRepository) UpdateOrder(
 	order int64,
 	status string,
 	accrual float64,
-) error {	_, err := p.database.ExecContext(ctx,
-	"UPDATE orders SET status = $1, accrual = $2 WHERE id = $3",
-	status, accrual, order)
+) error {
+	_, err := p.database.ExecContext(ctx,
+		"UPDATE orders SET status = $1, accrual = $2 WHERE id = $3",
+		status, accrual, order)
 	return err
 }
 

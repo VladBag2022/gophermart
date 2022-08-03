@@ -1,12 +1,13 @@
 package main
 
 import (
-	"VladBag2022/gophermart/internal/accrual"
 	"context"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"VladBag2022/gophermart/internal/accrual"
 
 	log "github.com/sirupsen/logrus"
 	flag "github.com/spf13/pflag"
