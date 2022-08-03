@@ -223,6 +223,11 @@ func listHandler(s Server) http.HandlerFunc {
 
 		if len(orders) == 0 {
 			w.WriteHeader(http.StatusNoContent)
+			w.Header().Set("Content-Type", contentTypeJSON)
+			_, err = w.Write([]byte("[]"))
+			if err != nil {
+				log.Trace("Log in prod")
+			}
 			return
 		}
 
@@ -338,6 +343,11 @@ func withdrawalsHandler(s Server) http.HandlerFunc {
 
 		if len(withdrawals) == 0 {
 			w.WriteHeader(http.StatusNoContent)
+			w.Header().Set("Content-Type", contentTypeJSON)
+			_, err = w.Write([]byte("[]"))
+			if err != nil {
+				log.Trace("Log in prod")
+			}
 			return
 		}
 

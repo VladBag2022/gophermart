@@ -12,6 +12,13 @@ type PostgresRepository struct {
 	database *sql.DB
 }
 
+type PostgresOrderInfo struct {
+	Number     int             `json:"number"`
+	Status     string          `json:"status"`
+	Accrual    sql.NullFloat64 `json:"accrual"`
+	UploadedAt string          `json:"uploaded_at"`
+}
+
 func NewPostgresRepository(
 	ctx context.Context,
 	databaseDSN string,
@@ -130,11 +137,22 @@ func (p *PostgresRepository) Orders(
 	ctx context.Context,
 	login string,
 ) (orders []OrderInfo, err error) {
-	err = sqlscan.Select(ctx, p.database, &orders,
-		"SELECT orders.id, orders.status, orders.accrual, orders.uploaded_at FROM orders "+
+	var pOrders []PostgresOrderInfo
+	err = sqlscan.Select(ctx, p.database, &pOrders,
+		"SELECT orders.id AS number, orders.status, orders.accrual, orders.uploaded_at FROM orders "+
 			"JOIN users ON orders.user_id = users.id AND users.login = $1", login)
 	if err != nil {
 		return nil, err
+	}
+	for _, pOrder := range pOrders {
+		if pOrder.Accrual.Valid {
+			orders = append(orders, OrderInfo{
+				Accrual:    pOrder.Accrual.Float64,
+				Number:     pOrder.Number,
+				Status:     pOrder.Status,
+				UploadedAt: pOrder.UploadedAt,
+			})
+		}
 	}
 	return orders, nil
 }
@@ -146,12 +164,14 @@ func (p *PostgresRepository) Balance(
 	row := p.database.QueryRowContext(ctx,
 		"SELECT SUM(accrual), SUM(withdrawal) FROM orders JOIN users ON users.id = orders.user_id AND users.login = $1",
 		login)
-	err = row.Scan(&balance.Current, &balance.Withdrawn)
-	if err != nil {
+	var current, withdrawn sql.NullFloat64
+	err = row.Scan(&current, &withdrawn)
+	if err != nil || !current.Valid || !withdrawn.Valid {
 		balance.Current = 0.0
 		balance.Withdrawn = 0.0
 	} else {
-		balance.Current -= balance.Withdrawn
+		balance.Withdrawn = withdrawn.Float64
+		balance.Current = current.Float64 - withdrawn.Float64
 	}
 	return balance, err
 }
