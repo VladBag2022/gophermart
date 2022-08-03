@@ -28,6 +28,7 @@ func rootRouter(s Server) chi.Router {
 			ra.Use(CheckJWT(s))
 
 			ra.Post("/orders", uploadHandler(s))
+			ra.Get("/orders", listHandler(s))
 
 			return ra
 		}(s))

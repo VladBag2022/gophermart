@@ -5,9 +5,10 @@ import (
 )
 
 type OrderInfo struct {
-	number     int
-	status     string
-	uploadedAt string
+	Number     int     `json:"number"`
+	Status     string  `json:"status"`
+	Accrual    float64 `json:"accrual"`
+	UploadedAt string  `json:"uploaded_at"`
 }
 
 type WithdrawalInfo struct {

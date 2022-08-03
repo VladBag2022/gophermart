@@ -29,7 +29,7 @@ func CheckJWT(s Server) func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			authHeader := r.Header.Get("Authentication")
 			if len(authHeader) == 0 {
-				http.Error(w, "", http.StatusUnauthorized)
+				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
 

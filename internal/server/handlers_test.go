@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
+	"VladBag2022/gophermart/internal/storage"
 	"VladBag2022/gophermart/mocks"
 )
 
@@ -490,17 +491,41 @@ func TestServer_list(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, _, ts := getTestEntities(func(repository *mocks.Repository) {
+			userRegistered := false
+			_, s, ts := getTestEntities(func(repository *mocks.Repository) {
+				for tUser, tOrder := range tt.userOrders {
+					if tOrder {
+						repository.On("Orders", mock.Anything, tUser).Return([]storage.OrderInfo{
+							{
+								Number:  123,
+								Accrual: 0.0,
+							},
+						}, nil)
+					} else {
+						repository.On("Orders", mock.Anything, tUser).Return([]storage.OrderInfo{}, nil)
+					}
+					if tUser == tt.user {
+						userRegistered = true
+					}
+				}
 			})
 			require.NotNil(t, ts)
 			defer ts.Close()
 
-			response, content := makeTestRequest(t, ts, http.MethodGet, "/api/user/orders", "", "", nil)
+			h := ""
+			if userRegistered {
+				nh, err := getAuthHeader(*s, tt.user)
+				require.NoError(t, err)
+				h = nh
+			}
+
+			response, content := makeTestRequest(t, ts, http.MethodGet, "/api/user/orders", "", h, nil)
 			err := response.Body.Close()
 			require.NoError(t, err)
 
 			assert.Equal(t, tt.want.statusCode, response.StatusCode)
 			assert.Equal(t, tt.want.contentType, response.Header.Get("Content-Type"))
+			t.Log(content)
 			assert.Equal(t, tt.want.content, len(content) > 0)
 		})
 	}

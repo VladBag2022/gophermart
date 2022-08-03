@@ -204,3 +204,34 @@ func uploadHandler(s Server) http.HandlerFunc {
 		w.WriteHeader(http.StatusAccepted)
 	}
 }
+
+func listHandler(s Server) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		jwtOwner, _ := r.Context().Value("jwtLogin").(string)
+
+		orders, err := s.repository.Orders(r.Context(), jwtOwner)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if len(orders) == 0 {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		response, err := json.Marshal(&orders)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		_, err = w.Write(response)
+		if err != nil {
+			// log in prod
+		}
+	}
+}

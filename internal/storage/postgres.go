@@ -131,7 +131,7 @@ func (p *PostgresRepository) Orders(
 	login string,
 ) (orders []OrderInfo, err error) {
 	err = sqlscan.Select(ctx, p.database, &orders,
-		"SELECT orders.id, orders.status, orders.uploaded_at FROM orders "+
+		"SELECT orders.id, orders.status, orders.accrual, orders.uploaded_at FROM orders "+
 			"JOIN users ON orders.user_id = users.id AND users.login = $1", login)
 	if err != nil {
 		return nil, err
