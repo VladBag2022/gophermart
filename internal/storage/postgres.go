@@ -78,7 +78,7 @@ func (p *PostgresRepository) Register(
 	login, password string,
 ) error {
 	_, err := p.database.ExecContext(ctx,
-		"INSERT INTO users (login, password) VALUES ($1, crypt($2, gen_salt('bf'))",
+		"INSERT INTO users (login, password) VALUES ($1, crypt($2, gen_salt('bf')))",
 		login, password)
 	return err
 }
