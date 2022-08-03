@@ -12,8 +12,8 @@ type OrderInfo struct {
 }
 
 type BalanceInfo struct {
-	Current 	float64	`json:"current"`
-	Withdrawn   float64 `json:"withdrawn"`
+	Current   float64 `json:"current"`
+	Withdrawn float64 `json:"withdrawn"`
 }
 
 type WithdrawalInfo struct {

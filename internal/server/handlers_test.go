@@ -571,7 +571,7 @@ func TestServer_balance(t *testing.T) {
 			_, s, ts := getTestEntities(func(repository *mocks.Repository) {
 				for _, tUser := range tt.users {
 					repository.On("Balance", mock.Anything, tUser).Return(storage.BalanceInfo{
-						Current: 0.0,
+						Current:   0.0,
 						Withdrawn: 0.0,
 					}, nil)
 					if tUser == tt.user {
@@ -620,37 +620,46 @@ func TestServer_withdraw(t *testing.T) {
 			},
 			user:        "a",
 			contentType: "application/json",
-			content:     "{\"order\": \"2377225624\",\"sum\": \"10\"}",
+			content:     "{\"order\": \"2377225624\",\"sum\": 10}",
 			want: want{
 				statusCode: 200,
 			},
 		},
 		{
-			name:         "negative test - malformed content",
-			userBalances: map[string]float64{},
-			user:         "a",
-			contentType:  "application/json",
-			content:      "{\"login\": \"cd\",\"password\": \"12",
+			name: "negative test - malformed content",
+			userBalances: map[string]float64{
+				"a": 100.0,
+				"b": 200.0,
+			},
+			user:        "a",
+			contentType: "application/json",
+			content:     "{\"login\": \"cd\",\"password\": \"12",
 			want: want{
 				statusCode: 400,
 			},
 		},
 		{
-			name:         "negative test - wrong content type",
-			userBalances: map[string]float64{},
-			user:         "a",
-			contentType:  "text",
-			content:      "{\"order\": \"cd\",\"sum\": \"1234\"}",
+			name: "negative test - wrong content type",
+			userBalances: map[string]float64{
+				"a": 100.0,
+				"b": 200.0,
+			},
+			user:        "a",
+			contentType: "text",
+			content:     "{\"order\": \"cd\",\"sum\": 1234}",
 			want: want{
 				statusCode: 400,
 			},
 		},
 		{
-			name:         "negative test - wrong content",
-			userBalances: map[string]float64{},
-			user:         "a",
-			contentType:  "application/json",
-			content:      "{\"user\": \"cd\",\"pass\": \"1234\"}",
+			name: "negative test - wrong content",
+			userBalances: map[string]float64{
+				"a": 100.0,
+				"b": 200.0,
+			},
+			user:        "a",
+			contentType: "application/json",
+			content:     "{\"user\": \"cd\",\"pass\": 1234}",
 			want: want{
 				statusCode: 400,
 			},
@@ -663,7 +672,7 @@ func TestServer_withdraw(t *testing.T) {
 			},
 			user:        "c",
 			contentType: "application/json",
-			content:     "{\"order\": \"2377225624\",\"sum\": \"10\"}",
+			content:     "{\"order\": \"2377225624\",\"sum\": 10}",
 			want: want{
 				statusCode: 401,
 			},
@@ -676,7 +685,7 @@ func TestServer_withdraw(t *testing.T) {
 			},
 			user:        "a",
 			contentType: "application/json",
-			content:     "{\"order\": \"2377225624\",\"sum\": \"1000\"}",
+			content:     "{\"order\": \"2377225624\",\"sum\": 1000}",
 			want: want{
 				statusCode: 402,
 			},
@@ -689,7 +698,7 @@ func TestServer_withdraw(t *testing.T) {
 			},
 			user:        "a",
 			contentType: "application/json",
-			content:     "{\"order\": \"2377225626\",\"sum\": \"10\"}",
+			content:     "{\"order\": \"2377225626\",\"sum\": 10}",
 			want: want{
 				statusCode: 422,
 			},
@@ -697,12 +706,30 @@ func TestServer_withdraw(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, _, ts := getTestEntities(func(repository *mocks.Repository) {
+			userRegistered := false
+			_, s, ts := getTestEntities(func(repository *mocks.Repository) {
+				for tUser, tBalance := range tt.userBalances {
+					repository.On("Balance", mock.Anything, tUser).Return(storage.BalanceInfo{
+						Current:   tBalance,
+						Withdrawn: 0.0,
+					}, nil)
+					if tUser == tt.user {
+						userRegistered = true
+					}
+				}
+				repository.On("Withdraw", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			})
 			require.NotNil(t, ts)
 			defer ts.Close()
 
-			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/balance/withdraw", tt.contentType, "",
+			h := ""
+			if userRegistered {
+				nh, err := getAuthHeader(*s, tt.user)
+				require.NoError(t, err)
+				h = nh
+			}
+
+			response, _ := makeTestRequest(t, ts, http.MethodPost, "/api/user/balance/withdraw", tt.contentType, h,
 				strings.NewReader(tt.content))
 			err := response.Body.Close()
 			require.NoError(t, err)

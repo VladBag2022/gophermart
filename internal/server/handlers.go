@@ -17,6 +17,11 @@ type UserAuthRequest struct {
 	Password string `json:"password"`
 }
 
+type WithdrawRequest struct {
+	Order string  `json:"order"`
+	Sum   float64 `json:"sum"`
+}
+
 type AuthClaims struct {
 	Login string `json:"login"`
 	jwt.StandardClaims
@@ -259,5 +264,63 @@ func balanceHandler(s Server) http.HandlerFunc {
 		if err != nil {
 			// log in prod
 		}
+	}
+}
+
+func withdrawHandler(s Server) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if r.Header.Get("Content-Type") != "application/json" {
+			http.Error(w, "Bad content type", http.StatusBadRequest)
+			return
+		}
+
+		var request WithdrawRequest
+		if err = json.Unmarshal(body, &request); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if len(request.Order) == 0 {
+			http.Error(w, "Order must not be null", http.StatusBadRequest)
+			return
+		}
+
+		order, err := strconv.Atoi(request.Order)
+		if err != nil {
+			http.Error(w, "Bad order number", http.StatusUnprocessableEntity)
+			return
+		}
+
+		if !luhn.Valid(order) {
+			http.Error(w, "Bad order number", http.StatusUnprocessableEntity)
+			return
+		}
+
+		jwtLogin, _ := r.Context().Value("jwtLogin").(string)
+
+		balance, err := s.repository.Balance(r.Context(), jwtLogin)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if request.Sum > balance.Current {
+			http.Error(w, "No money - no honey", http.StatusPaymentRequired)
+			return
+		}
+
+		err = s.repository.Withdraw(r.Context(), jwtLogin, order, request.Sum)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
 	}
 }
