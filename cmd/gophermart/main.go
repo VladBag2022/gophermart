@@ -6,14 +6,10 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-)
 
-import (
 	log "github.com/sirupsen/logrus"
 	flag "github.com/spf13/pflag"
-)
-
-import (
+	
 	"VladBag2022/gophermart/internal/server"
 	"VladBag2022/gophermart/internal/storage"
 )
