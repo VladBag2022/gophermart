@@ -3,13 +3,13 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/theplant/luhn"
 	"io"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/theplant/luhn"
 )
 
 type UserAuthRequest struct {
@@ -27,7 +27,7 @@ func getAuthJWT(s Server, login string) (token string, err error) {
 		login,
 		jwt.StandardClaims{
 			IssuedAt:  time.Now().Unix(),
-			ExpiresAt: time.Now().Unix() + int64(time.Hour / time.Second),
+			ExpiresAt: time.Now().Unix() + int64(time.Hour/time.Second),
 		},
 	}
 

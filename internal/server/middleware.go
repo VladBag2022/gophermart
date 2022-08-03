@@ -3,9 +3,10 @@ package server
 import (
 	"compress/gzip"
 	"context"
-	"github.com/golang-jwt/jwt"
 	"net/http"
 	"strings"
+
+	"github.com/golang-jwt/jwt"
 )
 
 func DecompressGZIP(next http.Handler) http.Handler {
@@ -23,10 +24,10 @@ func DecompressGZIP(next http.Handler) http.Handler {
 	})
 }
 
-func CheckJWT(s Server) func (next http.Handler) http.Handler {
-	return func (next http.Handler) http.Handler {
+func CheckJWT(s Server) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			authHeader:= r.Header.Get("Authentication")
+			authHeader := r.Header.Get("Authentication")
 			if len(authHeader) == 0 {
 				http.Error(w, "", http.StatusUnauthorized)
 				return

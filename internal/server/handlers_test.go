@@ -9,9 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/mock"
-
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"VladBag2022/gophermart/mocks"
@@ -404,7 +403,7 @@ func TestServer_upload(t *testing.T) {
 							orderUploaded = true
 						}
 					}
-					if tUser == tt.user{
+					if tUser == tt.user {
 						userRegistered = true
 					}
 				}
@@ -496,7 +495,7 @@ func TestServer_list(t *testing.T) {
 			require.NotNil(t, ts)
 			defer ts.Close()
 
-			response, content := makeTestRequest(t, ts, http.MethodGet, "/api/user/orders", "",  "",nil)
+			response, content := makeTestRequest(t, ts, http.MethodGet, "/api/user/orders", "", "", nil)
 			err := response.Body.Close()
 			require.NoError(t, err)
 
@@ -548,7 +547,7 @@ func TestServer_balance(t *testing.T) {
 			require.NotNil(t, ts)
 			defer ts.Close()
 
-			response, content := makeTestRequest(t, ts, http.MethodGet, "/api/user/balance", "", "",nil)
+			response, content := makeTestRequest(t, ts, http.MethodGet, "/api/user/balance", "", "", nil)
 			err := response.Body.Close()
 			require.NoError(t, err)
 

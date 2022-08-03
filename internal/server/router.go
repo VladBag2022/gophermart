@@ -1,10 +1,11 @@
 package server
 
 import (
+	"net/http"
+
 	"github.com/NYTimes/gziphandler"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"net/http"
 )
 
 func rootRouter(s Server) chi.Router {
