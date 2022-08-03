@@ -190,7 +190,7 @@ func uploadHandler(s Server) http.HandlerFunc {
 			return
 		}
 
-		jwtOwner, _ := r.Context().Value("jwtLogin").(string)
+		jwtOwner, _ := r.Context().Value(contextJWTLogin).(string)
 
 		if owner == jwtOwner {
 			w.WriteHeader(http.StatusOK)
@@ -212,7 +212,7 @@ func uploadHandler(s Server) http.HandlerFunc {
 
 func listHandler(s Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		jwtOwner, _ := r.Context().Value("jwtLogin").(string)
+		jwtOwner, _ := r.Context().Value(contextJWTLogin).(string)
 
 		orders, err := s.repository.Orders(r.Context(), jwtOwner)
 		if err != nil {
@@ -243,7 +243,7 @@ func listHandler(s Server) http.HandlerFunc {
 
 func balanceHandler(s Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		jwtOwner, _ := r.Context().Value("jwtLogin").(string)
+		jwtOwner, _ := r.Context().Value(contextJWTLogin).(string)
 
 		balance, err := s.repository.Balance(r.Context(), jwtOwner)
 		if err != nil {
@@ -302,7 +302,7 @@ func withdrawHandler(s Server) http.HandlerFunc {
 			return
 		}
 
-		jwtLogin, _ := r.Context().Value("jwtLogin").(string)
+		jwtLogin, _ := r.Context().Value(contextJWTLogin).(string)
 
 		balance, err := s.repository.Balance(r.Context(), jwtLogin)
 		if err != nil {
@@ -327,7 +327,7 @@ func withdrawHandler(s Server) http.HandlerFunc {
 
 func withdrawalsHandler(s Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		jwtLogin, _ := r.Context().Value("jwtLogin").(string)
+		jwtLogin, _ := r.Context().Value(contextJWTLogin).(string)
 
 		withdrawals, err := s.repository.Withdrawals(r.Context(), jwtLogin)
 		if err != nil {
