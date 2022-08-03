@@ -89,7 +89,7 @@ func (p *PostgresRepository) Login(
 ) (success bool, err error) {
 	var count int64
 	row := p.database.QueryRowContext(ctx,
-		"SELECT COUNT(*) FROM users WHERE login = $1 AND password = crypt($2, gen_salt('bf')",
+		"SELECT COUNT(*) FROM users WHERE login = $1 AND password = crypt($2, password)",
 		login, password)
 	err = row.Scan(&count)
 	if err != nil {
