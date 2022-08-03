@@ -145,14 +145,17 @@ func (p *PostgresRepository) Orders(
 		return nil, err
 	}
 	for _, pOrder := range pOrders {
+		accrual := 0.0
 		if pOrder.Accrual.Valid {
-			orders = append(orders, OrderInfo{
-				Accrual:    pOrder.Accrual.Float64,
-				Number:     pOrder.Number,
-				Status:     pOrder.Status,
-				UploadedAt: pOrder.UploadedAt,
-			})
+			accrual = pOrder.Accrual.Float64
 		}
+
+		orders = append(orders, OrderInfo{
+			Accrual:    accrual,
+			Number:     pOrder.Number,
+			Status:     pOrder.Status,
+			UploadedAt: pOrder.UploadedAt,
+		})
 	}
 	return orders, nil
 }
