@@ -37,6 +37,8 @@ func (d Daemon) orderInfo(order int64) (info *orderInfoResponse, retryAfter int,
 			return nil, 0, err
 		}
 		return nil, retryAfter, nil
+	} else if response.StatusCode == 204 {
+		return nil, 1, nil
 	}
 	return nil, 0, fmt.Errorf("unknown response status code: %d", response.StatusCode)
 }
