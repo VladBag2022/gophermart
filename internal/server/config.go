@@ -5,9 +5,10 @@ import (
 )
 
 type Config struct {
-	Address string `env:"RUN_ADDRESS" envDefault:"localhost:8080"`
-	Accrual string `env:"ACCRUAL_SYSTEM_ADDRESS"`
-	JWTKey  string `env:"AUTH_KEY" envDefault:"gopher"`
+	Address  string `env:"RUN_ADDRESS" envDefault:"localhost:8080"`
+	Database string `env:"DATABASE_URI"`
+	Accrual  string `env:"ACCRUAL_SYSTEM_ADDRESS"`
+	JWTKey   string `env:"AUTH_KEY" envDefault:"gopher"`
 }
 
 func NewConfig() (*Config, error) {

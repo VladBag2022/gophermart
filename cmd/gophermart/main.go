@@ -29,13 +29,26 @@ func main() {
 	if len(*addressPtr) != 0 {
 		config.Address = *addressPtr
 	}
+	if len(*databasePtr) != 0 {
+		config.Database = *databasePtr
+	}
 	if len(*accrualPtr) != 0 {
 		config.Accrual = *accrualPtr
 	}
 
+	if len(config.Database) == 0 {
+		log.Error("Database URI is required")
+		return
+	}
+
+	if len(config.Accrual) == 0 {
+		log.Error("Accrual system address is required")
+		return
+	}
+
 	repository, err := storage.NewPostgresRepository(
 		context.Background(),
-		*databasePtr,
+		config.Database,
 	)
 	if err != nil {
 		log.Error(err)
