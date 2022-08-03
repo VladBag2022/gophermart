@@ -19,7 +19,6 @@ import (
 )
 
 func main() {
-	fmt.Println("Test output")
 	config, err := server.NewConfig()
 	if err != nil {
 		log.Error(fmt.Sprintf("Unable to read configuration from environment variables: %s", err))
