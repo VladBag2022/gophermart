@@ -9,7 +9,7 @@ import (
 )
 
 type orderInfoResponse struct {
-	Order   int     `json:"order"`
+	Order   string  `json:"order"`
 	Status  string  `json:"status"`
 	Accrual float64 `json:"accrual"`
 }
