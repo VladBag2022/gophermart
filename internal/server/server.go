@@ -20,7 +20,7 @@ func NewServer(repository storage.Repository, config *Config) Server {
 }
 
 func (s Server) ListenAndServer() {
-	if err := http.ListenAndServe(s.config.Address, newRouter(s)); err != nil {
+	if err := http.ListenAndServe(s.config.Address, rootRouter(s)); err != nil {
 		fmt.Println(err)
 		return
 	}

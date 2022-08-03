@@ -60,7 +60,7 @@ func getTestEntities(
 	repository := new(mocks.Repository)
 	addExpectationsFunc(repository)
 	server := NewServer(repository, config)
-	router := newRouter(server)
+	router := rootRouter(server)
 	return repository, &server, httptest.NewServer(router)
 }
 

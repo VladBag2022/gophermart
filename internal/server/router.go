@@ -4,9 +4,10 @@ import (
 	"github.com/NYTimes/gziphandler"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"net/http"
 )
 
-func newRouter(s Server) chi.Router {
+func rootRouter(s Server) chi.Router {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
@@ -17,9 +18,19 @@ func newRouter(s Server) chi.Router {
 	r.Use(DecompressGZIP)
 	r.Use(gziphandler.GzipHandler)
 
-	r.Post("/api/user/register", registerHandler(s))
-	r.Post("/api/user/login", loginHandler(s))
-	r.Post("/api/user/orders", uploadHandler(s))
+	r.Route("/api/user", func(r chi.Router) {
+		r.Post("/register", registerHandler(s))
+		r.Post("/login", loginHandler(s))
+
+		r.Mount("/", func(s Server) http.Handler {
+			ra := chi.NewRouter()
+			ra.Use(CheckJWT(s))
+
+			ra.Post("/orders", uploadHandler(s))
+
+			return ra
+		}(s))
+	})
 
 	r.MethodNotAllowed(badRequestHandler)
 	r.NotFound(badRequestHandler)
