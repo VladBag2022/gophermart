@@ -6,15 +6,20 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+)
 
+import (
 	log "github.com/sirupsen/logrus"
 	flag "github.com/spf13/pflag"
+)
 
+import (
 	"VladBag2022/gophermart/internal/server"
 	"VladBag2022/gophermart/internal/storage"
 )
 
 func main() {
+	fmt.Println("Test output")
 	config, err := server.NewConfig()
 	if err != nil {
 		log.Error(fmt.Sprintf("Unable to read configuration from environment variables: %s", err))
@@ -54,7 +59,6 @@ func main() {
 		log.Error(err)
 		return
 	}
-	defer repository.Close()
 
 	app := server.NewServer(repository, config)
 
@@ -68,4 +72,9 @@ func main() {
 		syscall.SIGTERM,
 		syscall.SIGQUIT)
 	<-sigChan
+
+	err = repository.Close()
+	if err != nil {
+		log.Error(err)
+	}
 }
