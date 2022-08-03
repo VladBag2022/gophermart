@@ -1,6 +1,7 @@
 package main
 
 import (
+	"VladBag2022/gophermart/internal/accrual"
 	"context"
 	"fmt"
 	"os"
@@ -56,6 +57,15 @@ func main() {
 	}
 
 	app := server.NewServer(repository, config)
+	daemon := accrual.NewDaemon(repository, config.Accrual)
+	daemonContext, daemonCancel := context.WithCancel(context.Background())
+
+	go func() {
+		dErr := daemon.Start(daemonContext)
+		if dErr != nil {
+			log.Error(dErr)
+		}
+	}()
 
 	go func() {
 		app.ListenAndServer()
@@ -67,6 +77,8 @@ func main() {
 		syscall.SIGTERM,
 		syscall.SIGQUIT)
 	<-sigChan
+
+	daemonCancel()
 
 	err = repository.Close()
 	if err != nil {

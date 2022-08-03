@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -294,7 +295,7 @@ func TestServer_upload(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		userOrders  map[string][]int
+		userOrders  map[string][]int64
 		user        string
 		contentType string
 		content     string
@@ -302,7 +303,7 @@ func TestServer_upload(t *testing.T) {
 	}{
 		{
 			name: "positive test - order already uploaded",
-			userOrders: map[string][]int{
+			userOrders: map[string][]int64{
 				"a": {123456789031, 566165445},
 				"b": {9579343, 58568287791534},
 			},
@@ -315,7 +316,7 @@ func TestServer_upload(t *testing.T) {
 		},
 		{
 			name: "positive test - new order",
-			userOrders: map[string][]int{
+			userOrders: map[string][]int64{
 				"a": {123456789031, 566165445},
 				"b": {9579343, 58568287791534},
 			},
@@ -328,7 +329,7 @@ func TestServer_upload(t *testing.T) {
 		},
 		{
 			name: "negative test - wrong content type",
-			userOrders: map[string][]int{
+			userOrders: map[string][]int64{
 				"a": {123456789031, 566165445},
 				"b": {9579343, 58568287791534},
 			},
@@ -341,7 +342,7 @@ func TestServer_upload(t *testing.T) {
 		},
 		{
 			name: "negative test - wrong content",
-			userOrders: map[string][]int{
+			userOrders: map[string][]int64{
 				"a": {123456789031, 566165445},
 				"b": {9579343, 58568287791534},
 			},
@@ -354,7 +355,7 @@ func TestServer_upload(t *testing.T) {
 		},
 		{
 			name: "negative test - unauthorized",
-			userOrders: map[string][]int{
+			userOrders: map[string][]int64{
 				"a": {123456789031, 566165445},
 				"b": {9579343, 58568287791534},
 			},
@@ -367,7 +368,7 @@ func TestServer_upload(t *testing.T) {
 		},
 		{
 			name: "negative test - order already uploaded by another user",
-			userOrders: map[string][]int{
+			userOrders: map[string][]int64{
 				"a": {123456789031, 566165445},
 				"b": {9579343, 58568287791534},
 			},
@@ -380,7 +381,7 @@ func TestServer_upload(t *testing.T) {
 		},
 		{
 			name: "negative test - bad Luhn check",
-			userOrders: map[string][]int{
+			userOrders: map[string][]int64{
 				"a": {123456789031, 566165445},
 				"b": {9579343, 58568287791534},
 			},
@@ -400,7 +401,7 @@ func TestServer_upload(t *testing.T) {
 				for tUser, tOrders := range tt.userOrders {
 					for _, tOrder := range tOrders {
 						repository.On("OrderOwner", mock.Anything, tOrder).Return(tUser, nil)
-						if strconv.Itoa(tOrder) == tt.content {
+						if fmt.Sprintf("%d", tOrder) == tt.content {
 							orderUploaded = true
 						}
 					}

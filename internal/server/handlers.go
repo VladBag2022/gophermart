@@ -174,13 +174,13 @@ func uploadHandler(s Server) http.HandlerFunc {
 			return
 		}
 
-		order, err := strconv.Atoi(string(body))
+		order, err := strconv.ParseInt(string(body), 10, 64)
 		if err != nil {
 			http.Error(w, "Bad order number", http.StatusUnprocessableEntity)
 			return
 		}
 
-		if !luhn.Valid(order) {
+		if !luhn.Valid(int(order)) {
 			http.Error(w, "Bad order number", http.StatusUnprocessableEntity)
 			return
 		}
@@ -297,13 +297,13 @@ func withdrawHandler(s Server) http.HandlerFunc {
 			return
 		}
 
-		order, err := strconv.Atoi(request.Order)
+		order, err := strconv.ParseInt(request.Order, 10, 64)
 		if err != nil {
 			http.Error(w, "Bad order number", http.StatusUnprocessableEntity)
 			return
 		}
 
-		if !luhn.Valid(order) {
+		if !luhn.Valid(int(order)) {
 			http.Error(w, "Bad order number", http.StatusUnprocessableEntity)
 			return
 		}

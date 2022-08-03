@@ -13,7 +13,7 @@ type PostgresRepository struct {
 }
 
 type PostgresOrderInfo struct {
-	Number     int             `json:"number"`
+	Number     int64           `json:"number"`
 	Status     string          `json:"status"`
 	Accrual    sql.NullFloat64 `json:"accrual"`
 	UploadedAt string          `json:"uploaded_at"`
@@ -71,7 +71,7 @@ func (p *PostgresRepository) IsLoginAvailable(
 	ctx context.Context,
 	login string,
 ) (available bool, err error) {
-	var count int64
+	var count int
 	row := p.database.QueryRowContext(ctx, "SELECT COUNT(*) FROM users WHERE login = $1", login)
 	err = row.Scan(&count)
 	if err != nil {
@@ -94,7 +94,7 @@ func (p *PostgresRepository) Login(
 	ctx context.Context,
 	login, password string,
 ) (success bool, err error) {
-	var count int64
+	var count int
 	row := p.database.QueryRowContext(ctx,
 		"SELECT COUNT(*) FROM users WHERE login = $1 AND password = crypt($2, password)",
 		login, password)
@@ -107,7 +107,7 @@ func (p *PostgresRepository) Login(
 
 func (p *PostgresRepository) OrderOwner(
 	ctx context.Context,
-	order int,
+	order int64,
 ) (login string, err error) {
 	row := p.database.QueryRowContext(ctx,
 		"SELECT login FROM users JOIN orders ON users.id = orders.user_id AND orders.id = $1",
@@ -125,7 +125,7 @@ func (p *PostgresRepository) OrderOwner(
 func (p *PostgresRepository) UploadOrder(
 	ctx context.Context,
 	login string,
-	order int,
+	order int64,
 ) error {
 	_, err := p.database.ExecContext(ctx,
 		"INSERT INTO orders (id, user_id) SELECT $1, id FROM users WHERE login = $2",
@@ -160,6 +160,26 @@ func (p *PostgresRepository) Orders(
 	return orders, nil
 }
 
+func (p *PostgresRepository) AccrualOrders(
+	ctx context.Context,
+) (orders []int64, err error) {
+	err = sqlscan.Select(ctx, p.database, &orders,
+		"SELECT id AS number FROM orders "+
+			"WHERE status != 'INVALID' AND status != 'PROCESSED'")
+	return
+}
+
+func (p *PostgresRepository) UpdateOrder(
+	ctx context.Context,
+	order int64,
+	status string,
+	accrual float64,
+) error {	_, err := p.database.ExecContext(ctx,
+	"UPDATE orders SET status = $1, accrual = $2 WHERE id = $3",
+	status, accrual, order)
+	return err
+}
+
 func (p *PostgresRepository) Balance(
 	ctx context.Context,
 	login string,
@@ -182,7 +202,7 @@ func (p *PostgresRepository) Balance(
 func (p *PostgresRepository) Withdraw(
 	ctx context.Context,
 	login string,
-	order int,
+	order int64,
 	sum float64,
 ) error {
 	_, err := p.database.ExecContext(ctx,
