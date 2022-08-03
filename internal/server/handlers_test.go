@@ -78,7 +78,7 @@ func TestServer_register(t *testing.T) {
 		{
 			name:        "positive test - some logins",
 			logins:      []string{"a", "b"},
-			contentType: "application/json",
+			contentType: contentTypeJSON,
 			content:     "{\"login\": \"c\",\"password\": \"123\"}",
 			want: want{
 				statusCode: 200,
@@ -87,7 +87,7 @@ func TestServer_register(t *testing.T) {
 		{
 			name:        "positive test - no logins",
 			logins:      []string{},
-			contentType: "application/json",
+			contentType: contentTypeJSON,
 			content:     "{\"login\": \"c\",\"password\": \"123\"}",
 			want: want{
 				statusCode: 200,
@@ -96,7 +96,7 @@ func TestServer_register(t *testing.T) {
 		{
 			name:        "negative test - empty login",
 			logins:      []string{},
-			contentType: "application/json",
+			contentType: contentTypeJSON,
 			content:     "{\"login\": \"\",\"password\": \"123\"}",
 			want: want{
 				statusCode: 400,
@@ -105,7 +105,7 @@ func TestServer_register(t *testing.T) {
 		{
 			name:        "negative test - empty password",
 			logins:      []string{},
-			contentType: "application/json",
+			contentType: contentTypeJSON,
 			content:     "{\"login\": \"c\",\"password\": \"\"}",
 			want: want{
 				statusCode: 400,
@@ -114,7 +114,7 @@ func TestServer_register(t *testing.T) {
 		{
 			name:        "negative test - empty login and password",
 			logins:      []string{},
-			contentType: "application/json",
+			contentType: contentTypeJSON,
 			content:     "{\"login\": \"\",\"password\": \"\"}",
 			want: want{
 				statusCode: 400,
@@ -123,7 +123,7 @@ func TestServer_register(t *testing.T) {
 		{
 			name:        "negative test - duplicate login",
 			logins:      []string{"a", "b"},
-			contentType: "application/json",
+			contentType: contentTypeJSON,
 			content:     "{\"login\": \"a\",\"password\": \"123\"}",
 			want: want{
 				statusCode: 409,
@@ -141,7 +141,7 @@ func TestServer_register(t *testing.T) {
 		{
 			name:        "negative test - malformed content",
 			logins:      []string{"a", "b"},
-			contentType: "application/json",
+			contentType: contentTypeJSON,
 			content:     "{\"login\": \"a\",\"password\": \"12",
 			want: want{
 				statusCode: 400,
@@ -150,7 +150,7 @@ func TestServer_register(t *testing.T) {
 		{
 			name:        "negative test - wrong content",
 			logins:      []string{"a", "b"},
-			contentType: "application/json",
+			contentType: contentTypeJSON,
 			content:     "{\"user\": \"a\",\"pass\": \"12\"}",
 			want: want{
 				statusCode: 400,
@@ -204,7 +204,7 @@ func TestServer_login(t *testing.T) {
 				{"b", "123"},
 				{"c", "123"},
 			},
-			contentType: "application/json",
+			contentType: contentTypeJSON,
 			content:     "{\"login\": \"c\",\"password\": \"123\"}",
 			want: want{
 				statusCode: 200,
@@ -217,7 +217,7 @@ func TestServer_login(t *testing.T) {
 				{"b", "123"},
 				{"c", "123"},
 			},
-			contentType: "application/json",
+			contentType: contentTypeJSON,
 			content:     "{\"login\": \"c\",\"password\": \"1234\"}",
 			want: want{
 				statusCode: 401,
@@ -230,7 +230,7 @@ func TestServer_login(t *testing.T) {
 				{"b", "123"},
 				{"c", "123"},
 			},
-			contentType: "application/json",
+			contentType: contentTypeJSON,
 			content:     "{\"login\": \"cd\",\"password\": \"1234\"}",
 			want: want{
 				statusCode: 401,
@@ -239,7 +239,7 @@ func TestServer_login(t *testing.T) {
 		{
 			name:        "negative test - malformed content",
 			users:       []user{},
-			contentType: "application/json",
+			contentType: contentTypeJSON,
 			content:     "{\"login\": \"cd\",\"password\": \"12",
 			want: want{
 				statusCode: 400,
@@ -257,7 +257,7 @@ func TestServer_login(t *testing.T) {
 		{
 			name:        "negative test - wrong content",
 			users:       []user{},
-			contentType: "application/json",
+			contentType: contentTypeJSON,
 			content:     "{\"user\": \"cd\",\"pass\": \"1234\"}",
 			want: want{
 				statusCode: 400,
@@ -333,7 +333,7 @@ func TestServer_upload(t *testing.T) {
 				"b": {9579343, 58568287791534},
 			},
 			user:        "a",
-			contentType: "application/json",
+			contentType: contentTypeJSON,
 			content:     "123456789032",
 			want: want{
 				statusCode: 400,
@@ -458,7 +458,7 @@ func TestServer_list(t *testing.T) {
 			user: "a",
 			want: want{
 				statusCode:  200,
-				contentType: "application/json",
+				contentType: contentTypeJSON,
 				content:     true,
 			},
 		},
@@ -550,7 +550,7 @@ func TestServer_balance(t *testing.T) {
 			user:  "a",
 			want: want{
 				statusCode:  200,
-				contentType: "application/json",
+				contentType: contentTypeJSON,
 				content:     true,
 			},
 		},
@@ -619,7 +619,7 @@ func TestServer_withdraw(t *testing.T) {
 				"b": 200.0,
 			},
 			user:        "a",
-			contentType: "application/json",
+			contentType: contentTypeJSON,
 			content:     "{\"order\": \"2377225624\",\"sum\": 10}",
 			want: want{
 				statusCode: 200,
@@ -632,7 +632,7 @@ func TestServer_withdraw(t *testing.T) {
 				"b": 200.0,
 			},
 			user:        "a",
-			contentType: "application/json",
+			contentType: contentTypeJSON,
 			content:     "{\"login\": \"cd\",\"password\": \"12",
 			want: want{
 				statusCode: 400,
@@ -658,7 +658,7 @@ func TestServer_withdraw(t *testing.T) {
 				"b": 200.0,
 			},
 			user:        "a",
-			contentType: "application/json",
+			contentType: contentTypeJSON,
 			content:     "{\"user\": \"cd\",\"pass\": 1234}",
 			want: want{
 				statusCode: 400,
@@ -671,7 +671,7 @@ func TestServer_withdraw(t *testing.T) {
 				"b": 200,
 			},
 			user:        "c",
-			contentType: "application/json",
+			contentType: contentTypeJSON,
 			content:     "{\"order\": \"2377225624\",\"sum\": 10}",
 			want: want{
 				statusCode: 401,
@@ -684,7 +684,7 @@ func TestServer_withdraw(t *testing.T) {
 				"b": 200,
 			},
 			user:        "a",
-			contentType: "application/json",
+			contentType: contentTypeJSON,
 			content:     "{\"order\": \"2377225624\",\"sum\": 1000}",
 			want: want{
 				statusCode: 402,
@@ -697,7 +697,7 @@ func TestServer_withdraw(t *testing.T) {
 				"b": 200,
 			},
 			user:        "a",
-			contentType: "application/json",
+			contentType: contentTypeJSON,
 			content:     "{\"order\": \"2377225626\",\"sum\": 10}",
 			want: want{
 				statusCode: 422,
@@ -760,7 +760,7 @@ func TestServer_withdrawals(t *testing.T) {
 			user: "a",
 			want: want{
 				statusCode:  200,
-				contentType: "application/json",
+				contentType: contentTypeJSON,
 				content:     true,
 			},
 		},

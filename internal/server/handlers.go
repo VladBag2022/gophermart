@@ -61,7 +61,7 @@ func registerHandler(s Server) http.HandlerFunc {
 			return
 		}
 
-		if r.Header.Get("Content-Type") != "application/json" {
+		if r.Header.Get("Content-Type") != contentTypeJSON {
 			http.Error(w, "Bad content type", http.StatusBadRequest)
 			return
 		}
@@ -118,7 +118,7 @@ func loginHandler(s Server) http.HandlerFunc {
 			return
 		}
 
-		if r.Header.Get("Content-Type") != "application/json" {
+		if r.Header.Get("Content-Type") != contentTypeJSON {
 			http.Error(w, "Bad content type", http.StatusBadRequest)
 			return
 		}
@@ -232,7 +232,7 @@ func listHandler(s Server) http.HandlerFunc {
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Type", contentTypeJSON)
 		w.WriteHeader(http.StatusOK)
 
 		_, err = w.Write(response)
@@ -258,7 +258,7 @@ func balanceHandler(s Server) http.HandlerFunc {
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Type", contentTypeJSON)
 		w.WriteHeader(http.StatusOK)
 
 		_, err = w.Write(response)
@@ -276,7 +276,7 @@ func withdrawHandler(s Server) http.HandlerFunc {
 			return
 		}
 
-		if r.Header.Get("Content-Type") != "application/json" {
+		if r.Header.Get("Content-Type") != contentTypeJSON {
 			http.Error(w, "Bad content type", http.StatusBadRequest)
 			return
 		}
@@ -347,7 +347,7 @@ func withdrawalsHandler(s Server) http.HandlerFunc {
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Type", contentTypeJSON)
 		w.WriteHeader(http.StatusOK)
 
 		_, err = w.Write(response)
