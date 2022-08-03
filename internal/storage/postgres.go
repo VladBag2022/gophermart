@@ -151,7 +151,7 @@ func (p *PostgresRepository) Balance(
 		balance.Current = 0.0
 		balance.Withdrawn = 0.0
 	} else {
-		balance.Current = balance.Current - balance.Withdrawn
+		balance.Current -= balance.Withdrawn
 	}
 	return balance, err
 }
