@@ -142,15 +142,18 @@ func (p *PostgresRepository) Orders(
 func (p *PostgresRepository) Balance(
 	ctx context.Context,
 	login string,
-) (current, withdrawn float64, err error) {
+) (balance BalanceInfo, err error) {
 	row := p.database.QueryRowContext(ctx,
 		"SELECT SUM(accrual), SUM(withdrawal) FROM orders JOIN users ON users.id = orders.user_id AND users.login = $1",
 		login)
-	err = row.Scan(&current, &withdrawn)
+	err = row.Scan(&balance.Current, &balance.Withdrawn)
 	if err != nil {
-		return 0.0, 0.0, err
+		balance.Current = 0.0
+		balance.Withdrawn = 0.0
+	} else {
+		balance.Current = balance.Current - balance.Withdrawn
 	}
-	return current - withdrawn, withdrawn, nil
+	return balance, err
 }
 
 func (p *PostgresRepository) Withdraw(

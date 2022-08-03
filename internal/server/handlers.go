@@ -235,3 +235,29 @@ func listHandler(s Server) http.HandlerFunc {
 		}
 	}
 }
+
+func balanceHandler(s Server) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		jwtOwner, _ := r.Context().Value("jwtLogin").(string)
+
+		balance, err := s.repository.Balance(r.Context(), jwtOwner)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		response, err := json.Marshal(&balance)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		_, err = w.Write(response)
+		if err != nil {
+			// log in prod
+		}
+	}
+}

@@ -11,6 +11,11 @@ type OrderInfo struct {
 	UploadedAt string  `json:"uploaded_at"`
 }
 
+type BalanceInfo struct {
+	Current 	float64	`json:"current"`
+	Withdrawn   float64 `json:"withdrawn"`
+}
+
 type WithdrawalInfo struct {
 	order       int
 	sum         float64
@@ -52,7 +57,7 @@ type Repository interface {
 	Balance(
 		ctx context.Context,
 		login string,
-	) (current, withdrawn float64, err error)
+	) (balance BalanceInfo, err error)
 
 	Withdraw(
 		ctx context.Context,

@@ -567,12 +567,29 @@ func TestServer_balance(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, _, ts := getTestEntities(func(repository *mocks.Repository) {
+			userRegistered := false
+			_, s, ts := getTestEntities(func(repository *mocks.Repository) {
+				for _, tUser := range tt.users {
+					repository.On("Balance", mock.Anything, tUser).Return(storage.BalanceInfo{
+						Current: 0.0,
+						Withdrawn: 0.0,
+					}, nil)
+					if tUser == tt.user {
+						userRegistered = true
+					}
+				}
 			})
 			require.NotNil(t, ts)
 			defer ts.Close()
 
-			response, content := makeTestRequest(t, ts, http.MethodGet, "/api/user/balance", "", "", nil)
+			h := ""
+			if userRegistered {
+				nh, err := getAuthHeader(*s, tt.user)
+				require.NoError(t, err)
+				h = nh
+			}
+
+			response, content := makeTestRequest(t, ts, http.MethodGet, "/api/user/balance", "", h, nil)
 			err := response.Body.Close()
 			require.NoError(t, err)
 

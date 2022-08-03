@@ -29,6 +29,7 @@ func rootRouter(s Server) chi.Router {
 
 			ra.Post("/orders", uploadHandler(s))
 			ra.Get("/orders", listHandler(s))
+			ra.Get("/balance", balanceHandler(s))
 
 			return ra
 		}(s))
