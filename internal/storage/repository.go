@@ -17,9 +17,9 @@ type BalanceInfo struct {
 }
 
 type WithdrawalInfo struct {
-	order       int
-	sum         float64
-	processedAt string
+	Order       int     `json:"order"`
+	Sum         float64 `json:"sum"`
+	ProcessedAt string  `json:"processed_at"`
 }
 
 type Repository interface {

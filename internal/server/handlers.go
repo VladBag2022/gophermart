@@ -324,3 +324,34 @@ func withdrawHandler(s Server) http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 	}
 }
+
+func withdrawalsHandler(s Server) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		jwtLogin, _ := r.Context().Value("jwtLogin").(string)
+
+		withdrawals, err := s.repository.Withdrawals(r.Context(), jwtLogin)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if len(withdrawals) == 0 {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		response, err := json.Marshal(&withdrawals)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		_, err = w.Write(response)
+		if err != nil {
+			// log in prod
+		}
+	}
+}

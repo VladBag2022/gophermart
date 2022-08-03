@@ -793,12 +793,36 @@ func TestServer_withdrawals(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, _, ts := getTestEntities(func(repository *mocks.Repository) {
+			userRegistered := false
+			_, s, ts := getTestEntities(func(repository *mocks.Repository) {
+				for tUser, tWithdrawal := range tt.userWithdrawals {
+					if tWithdrawal {
+						repository.On("Withdrawals", mock.Anything, tUser).Return([]storage.WithdrawalInfo{
+							{
+								Order: 123,
+								Sum:   10,
+							},
+						}, nil)
+					} else {
+						repository.On("Withdrawals", mock.Anything, tUser).Return([]storage.WithdrawalInfo{}, nil)
+					}
+					if tUser == tt.user {
+						userRegistered = true
+					}
+				}
+				repository.On("Withdraw", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			})
 			require.NotNil(t, ts)
 			defer ts.Close()
 
-			response, content := makeTestRequest(t, ts, http.MethodPost, "/api/user/balance/withdraw", "", "", nil)
+			h := ""
+			if userRegistered {
+				nh, err := getAuthHeader(*s, tt.user)
+				require.NoError(t, err)
+				h = nh
+			}
+
+			response, content := makeTestRequest(t, ts, http.MethodGet, "/api/user/withdrawals", "", h, nil)
 			err := response.Body.Close()
 			require.NoError(t, err)
 
