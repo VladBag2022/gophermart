@@ -471,8 +471,8 @@ func TestServer_list(t *testing.T) {
 			user: "b",
 			want: want{
 				statusCode:  204,
-				contentType: contentTypeJSON,
-				content:     true,
+				contentType: "",
+				content:     false,
 			},
 		},
 		{
@@ -773,8 +773,8 @@ func TestServer_withdrawals(t *testing.T) {
 			user: "b",
 			want: want{
 				statusCode:  204,
-				contentType: contentTypeJSON,
-				content:     true,
+				contentType: "",
+				content:     false,
 			},
 		},
 		{
