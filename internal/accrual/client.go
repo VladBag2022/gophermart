@@ -21,7 +21,8 @@ func (d Daemon) orderInfo(order int64) (info *orderInfoResponse, retryAfter int,
 	}
 	defer response.Body.Close()
 
-	if response.StatusCode == http.StatusOK {
+	switch response.StatusCode {
+	case http.StatusOK:
 		content, err := ioutil.ReadAll(response.Body)
 		if err != nil {
 			return nil, 0, err
@@ -30,15 +31,16 @@ func (d Daemon) orderInfo(order int64) (info *orderInfoResponse, retryAfter int,
 			return nil, 0, err
 		}
 		return info, 0, nil
-	} else if response.StatusCode == http.StatusTooManyRequests {
+	case http.StatusTooManyRequests:
 		header := response.Header.Get("Retry-After")
 		retryAfter, err = strconv.Atoi(header)
 		if err != nil {
 			return nil, 0, err
 		}
 		return nil, retryAfter, nil
-	} else if response.StatusCode == http.StatusNoContent {
+	case http.StatusNoContent:
 		return nil, 1, nil
+	default:
+		return nil, 0, fmt.Errorf("unknown response status code: %d", response.StatusCode)
 	}
-	return nil, 0, fmt.Errorf("unknown response status code: %d", response.StatusCode)
 }
