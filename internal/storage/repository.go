@@ -5,7 +5,7 @@ import (
 )
 
 type OrderInfo struct {
-	Number     int     `json:"number"`
+	Number     string  `json:"number"`
 	Status     string  `json:"status"`
 	Accrual    float64 `json:"accrual,omitempty"`
 	UploadedAt string  `json:"uploaded_at"`
@@ -17,7 +17,7 @@ type BalanceInfo struct {
 }
 
 type WithdrawalInfo struct {
-	Order       int     `json:"order"`
+	Order       string  `json:"order"`
 	Sum         float64 `json:"sum"`
 	ProcessedAt string  `json:"processed_at"`
 }
@@ -40,19 +40,30 @@ type Repository interface {
 
 	OrderOwner(
 		ctx context.Context,
-		order int,
+		order int64,
 	) (login string, err error)
 
 	UploadOrder(
 		ctx context.Context,
 		login string,
-		order int,
+		order int64,
 	) error
 
 	Orders(
 		ctx context.Context,
 		login string,
 	) (orders []OrderInfo, err error)
+
+	AccrualOrders(
+		ctx context.Context,
+	) (orders []int64, err error)
+
+	UpdateOrder(
+		ctx context.Context,
+		order int64,
+		status string,
+		accrual float64,
+	) error
 
 	Balance(
 		ctx context.Context,
@@ -62,7 +73,7 @@ type Repository interface {
 	Withdraw(
 		ctx context.Context,
 		login string,
-		order int,
+		order int64,
 		sum float64,
 	) error
 

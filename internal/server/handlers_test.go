@@ -294,7 +294,7 @@ func TestServer_upload(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		userOrders  map[string][]int
+		userOrders  map[string][]int64
 		user        string
 		contentType string
 		content     string
@@ -302,7 +302,7 @@ func TestServer_upload(t *testing.T) {
 	}{
 		{
 			name: "positive test - order already uploaded",
-			userOrders: map[string][]int{
+			userOrders: map[string][]int64{
 				"a": {123456789031, 566165445},
 				"b": {9579343, 58568287791534},
 			},
@@ -315,7 +315,7 @@ func TestServer_upload(t *testing.T) {
 		},
 		{
 			name: "positive test - new order",
-			userOrders: map[string][]int{
+			userOrders: map[string][]int64{
 				"a": {123456789031, 566165445},
 				"b": {9579343, 58568287791534},
 			},
@@ -328,7 +328,7 @@ func TestServer_upload(t *testing.T) {
 		},
 		{
 			name: "negative test - wrong content type",
-			userOrders: map[string][]int{
+			userOrders: map[string][]int64{
 				"a": {123456789031, 566165445},
 				"b": {9579343, 58568287791534},
 			},
@@ -341,7 +341,7 @@ func TestServer_upload(t *testing.T) {
 		},
 		{
 			name: "negative test - wrong content",
-			userOrders: map[string][]int{
+			userOrders: map[string][]int64{
 				"a": {123456789031, 566165445},
 				"b": {9579343, 58568287791534},
 			},
@@ -354,7 +354,7 @@ func TestServer_upload(t *testing.T) {
 		},
 		{
 			name: "negative test - unauthorized",
-			userOrders: map[string][]int{
+			userOrders: map[string][]int64{
 				"a": {123456789031, 566165445},
 				"b": {9579343, 58568287791534},
 			},
@@ -367,7 +367,7 @@ func TestServer_upload(t *testing.T) {
 		},
 		{
 			name: "negative test - order already uploaded by another user",
-			userOrders: map[string][]int{
+			userOrders: map[string][]int64{
 				"a": {123456789031, 566165445},
 				"b": {9579343, 58568287791534},
 			},
@@ -380,7 +380,7 @@ func TestServer_upload(t *testing.T) {
 		},
 		{
 			name: "negative test - bad Luhn check",
-			userOrders: map[string][]int{
+			userOrders: map[string][]int64{
 				"a": {123456789031, 566165445},
 				"b": {9579343, 58568287791534},
 			},
@@ -400,7 +400,7 @@ func TestServer_upload(t *testing.T) {
 				for tUser, tOrders := range tt.userOrders {
 					for _, tOrder := range tOrders {
 						repository.On("OrderOwner", mock.Anything, tOrder).Return(tUser, nil)
-						if strconv.Itoa(tOrder) == tt.content {
+						if strconv.FormatInt(tOrder, 10) == tt.content {
 							orderUploaded = true
 						}
 					}
@@ -409,7 +409,7 @@ func TestServer_upload(t *testing.T) {
 					}
 				}
 				if !orderUploaded {
-					order, err := strconv.Atoi(tt.content)
+					order, err := strconv.ParseInt(tt.content, 10, 64)
 					if err == nil {
 						repository.On("OrderOwner", mock.Anything, order).Return("", nil)
 					}
@@ -497,7 +497,7 @@ func TestServer_list(t *testing.T) {
 					if tOrder {
 						repository.On("Orders", mock.Anything, tUser).Return([]storage.OrderInfo{
 							{
-								Number:  123,
+								Number:  "123",
 								Accrual: 0.0,
 							},
 						}, nil)
@@ -799,7 +799,7 @@ func TestServer_withdrawals(t *testing.T) {
 					if tWithdrawal {
 						repository.On("Withdrawals", mock.Anything, tUser).Return([]storage.WithdrawalInfo{
 							{
-								Order: 123,
+								Order: "123",
 								Sum:   10,
 							},
 						}, nil)

@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"database/sql"
+	"strconv"
 
 	"github.com/georgysavva/scany/sqlscan"
 	_ "github.com/jackc/pgx/v4/stdlib"
@@ -13,10 +14,16 @@ type PostgresRepository struct {
 }
 
 type PostgresOrderInfo struct {
-	Number     int             `json:"number"`
+	Number     int64           `json:"number"`
 	Status     string          `json:"status"`
 	Accrual    sql.NullFloat64 `json:"accrual"`
 	UploadedAt string          `json:"uploaded_at"`
+}
+
+type PostgresWithdrawalInfo struct {
+	Order       string          `json:"order"`
+	Sum         sql.NullFloat64 `json:"sum"`
+	ProcessedAt string          `json:"processed_at"`
 }
 
 func NewPostgresRepository(
@@ -71,7 +78,7 @@ func (p *PostgresRepository) IsLoginAvailable(
 	ctx context.Context,
 	login string,
 ) (available bool, err error) {
-	var count int64
+	var count int
 	row := p.database.QueryRowContext(ctx, "SELECT COUNT(*) FROM users WHERE login = $1", login)
 	err = row.Scan(&count)
 	if err != nil {
@@ -94,7 +101,7 @@ func (p *PostgresRepository) Login(
 	ctx context.Context,
 	login, password string,
 ) (success bool, err error) {
-	var count int64
+	var count int
 	row := p.database.QueryRowContext(ctx,
 		"SELECT COUNT(*) FROM users WHERE login = $1 AND password = crypt($2, password)",
 		login, password)
@@ -107,7 +114,7 @@ func (p *PostgresRepository) Login(
 
 func (p *PostgresRepository) OrderOwner(
 	ctx context.Context,
-	order int,
+	order int64,
 ) (login string, err error) {
 	row := p.database.QueryRowContext(ctx,
 		"SELECT login FROM users JOIN orders ON users.id = orders.user_id AND orders.id = $1",
@@ -125,7 +132,7 @@ func (p *PostgresRepository) OrderOwner(
 func (p *PostgresRepository) UploadOrder(
 	ctx context.Context,
 	login string,
-	order int,
+	order int64,
 ) error {
 	_, err := p.database.ExecContext(ctx,
 		"INSERT INTO orders (id, user_id) SELECT $1, id FROM users WHERE login = $2",
@@ -152,12 +159,33 @@ func (p *PostgresRepository) Orders(
 
 		orders = append(orders, OrderInfo{
 			Accrual:    accrual,
-			Number:     pOrder.Number,
+			Number:     strconv.FormatInt(pOrder.Number, 10),
 			Status:     pOrder.Status,
 			UploadedAt: pOrder.UploadedAt,
 		})
 	}
 	return orders, nil
+}
+
+func (p *PostgresRepository) AccrualOrders(
+	ctx context.Context,
+) (orders []int64, err error) {
+	err = sqlscan.Select(ctx, p.database, &orders,
+		"SELECT id AS number FROM orders "+
+			"WHERE status != 'INVALID' AND status != 'PROCESSED'")
+	return
+}
+
+func (p *PostgresRepository) UpdateOrder(
+	ctx context.Context,
+	order int64,
+	status string,
+	accrual float64,
+) error {
+	_, err := p.database.ExecContext(ctx,
+		"UPDATE orders SET status = $1, accrual = $2 WHERE id = $3",
+		status, accrual, order)
+	return err
 }
 
 func (p *PostgresRepository) Balance(
@@ -169,10 +197,16 @@ func (p *PostgresRepository) Balance(
 		login)
 	var current, withdrawn sql.NullFloat64
 	err = row.Scan(&current, &withdrawn)
-	if err != nil || !current.Valid || !withdrawn.Valid {
+	if err != nil {
 		balance.Current = 0.0
 		balance.Withdrawn = 0.0
 	} else {
+		if !current.Valid {
+			current.Float64 = 0.0
+		}
+		if !withdrawn.Valid {
+			withdrawn.Float64 = 0.0
+		}
 		balance.Withdrawn = withdrawn.Float64
 		balance.Current = current.Float64 - withdrawn.Float64
 	}
@@ -182,7 +216,7 @@ func (p *PostgresRepository) Balance(
 func (p *PostgresRepository) Withdraw(
 	ctx context.Context,
 	login string,
-	order int,
+	order int64,
 	sum float64,
 ) error {
 	_, err := p.database.ExecContext(ctx,
@@ -195,11 +229,21 @@ func (p *PostgresRepository) Withdrawals(
 	ctx context.Context,
 	login string,
 ) (withdrawals []WithdrawalInfo, err error) {
-	err = sqlscan.Select(ctx, p.database, &withdrawals,
-		"SELECT orders.id, orders.withdrawal, orders.uploaded_at FROM orders "+
+	var pWithdrawals []PostgresWithdrawalInfo
+	err = sqlscan.Select(ctx, p.database, &pWithdrawals,
+		"SELECT orders.id AS order, orders.withdrawal AS sum, orders.uploaded_at AS processed_at FROM orders "+
 			"JOIN users ON orders.user_id = users.id AND users.login = $1", login)
 	if err != nil {
 		return nil, err
+	}
+	for _, pWithdrawal := range pWithdrawals {
+		if pWithdrawal.Sum.Valid {
+			withdrawals = append(withdrawals, WithdrawalInfo{
+				Sum:         pWithdrawal.Sum.Float64,
+				Order:       pWithdrawal.Order,
+				ProcessedAt: pWithdrawal.ProcessedAt,
+			})
+		}
 	}
 	return withdrawals, nil
 }
