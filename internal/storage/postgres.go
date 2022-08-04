@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"database/sql"
+	"strconv"
 
 	"github.com/georgysavva/scany/sqlscan"
 	_ "github.com/jackc/pgx/v4/stdlib"
@@ -152,7 +153,7 @@ func (p *PostgresRepository) Orders(
 
 		orders = append(orders, OrderInfo{
 			Accrual:    accrual,
-			Number:     pOrder.Number,
+			Number:     strconv.FormatInt(pOrder.Number, 10),
 			Status:     pOrder.Status,
 			UploadedAt: pOrder.UploadedAt,
 		})

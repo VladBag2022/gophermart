@@ -497,7 +497,7 @@ func TestServer_list(t *testing.T) {
 					if tOrder {
 						repository.On("Orders", mock.Anything, tUser).Return([]storage.OrderInfo{
 							{
-								Number:  123,
+								Number:  "123",
 								Accrual: 0.0,
 							},
 						}, nil)
@@ -799,7 +799,7 @@ func TestServer_withdrawals(t *testing.T) {
 					if tWithdrawal {
 						repository.On("Withdrawals", mock.Anything, tUser).Return([]storage.WithdrawalInfo{
 							{
-								Order: 123,
+								Order: "123",
 								Sum:   10,
 							},
 						}, nil)
