@@ -10,7 +10,8 @@ import (
 
 	"github.com/golang-jwt/jwt"
 	log "github.com/sirupsen/logrus"
-	"github.com/theplant/luhn"
+
+	"VladBag2022/gophermart/internal/luhn"
 )
 
 type UserAuthRequest struct {
@@ -180,7 +181,7 @@ func uploadHandler(s Server) http.HandlerFunc {
 			return
 		}
 
-		if !luhn.Valid(int(order)) {
+		if !luhn.Valid(order) {
 			http.Error(w, "Bad order number", http.StatusUnprocessableEntity)
 			return
 		}
@@ -298,7 +299,7 @@ func withdrawHandler(s Server) http.HandlerFunc {
 			return
 		}
 
-		if !luhn.Valid(int(order)) {
+		if !luhn.Valid(order) {
 			http.Error(w, "Bad order number", http.StatusUnprocessableEntity)
 			return
 		}
