@@ -20,6 +20,12 @@ type PostgresOrderInfo struct {
 	UploadedAt string          `json:"uploaded_at"`
 }
 
+type PostgresWithdrawalInfo struct {
+	Order       string          `json:"order"`
+	Sum         sql.NullFloat64 `json:"sum"`
+	ProcessedAt string          `json:"processed_at"`
+}
+
 func NewPostgresRepository(
 	ctx context.Context,
 	databaseDSN string,
@@ -223,11 +229,21 @@ func (p *PostgresRepository) Withdrawals(
 	ctx context.Context,
 	login string,
 ) (withdrawals []WithdrawalInfo, err error) {
-	err = sqlscan.Select(ctx, p.database, &withdrawals,
-		"SELECT orders.id, orders.withdrawal, orders.uploaded_at FROM orders "+
+	var pWithdrawals []PostgresWithdrawalInfo
+	err = sqlscan.Select(ctx, p.database, &pWithdrawals,
+		"SELECT orders.id AS order, orders.withdrawal AS sum, orders.uploaded_at AS processed_at FROM orders "+
 			"JOIN users ON orders.user_id = users.id AND users.login = $1", login)
 	if err != nil {
 		return nil, err
+	}
+	for _, pWithdrawal := range pWithdrawals {
+		if pWithdrawal.Sum.Valid {
+			withdrawals = append(withdrawals, WithdrawalInfo{
+				Sum:         pWithdrawal.Sum.Float64,
+				Order:       pWithdrawal.Order,
+				ProcessedAt: pWithdrawal.ProcessedAt,
+			})
+		}
 	}
 	return withdrawals, nil
 }
