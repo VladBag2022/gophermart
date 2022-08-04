@@ -191,10 +191,16 @@ func (p *PostgresRepository) Balance(
 		login)
 	var current, withdrawn sql.NullFloat64
 	err = row.Scan(&current, &withdrawn)
-	if err != nil || !current.Valid || !withdrawn.Valid {
+	if err != nil {
 		balance.Current = 0.0
 		balance.Withdrawn = 0.0
 	} else {
+		if !current.Valid {
+			current.Float64 = 0.0
+		}
+		if !withdrawn.Valid {
+			withdrawn.Float64 = 0.0
+		}
 		balance.Withdrawn = withdrawn.Float64
 		balance.Current = current.Float64 - withdrawn.Float64
 	}
