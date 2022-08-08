@@ -15,7 +15,8 @@ type orderInfoResponse struct {
 }
 
 func (d Daemon) orderInfo(order int64) (info *orderInfoResponse, retryAfter int, err error) {
-	response, err := http.Get(fmt.Sprintf("%s/api/orders/%d", d.accrualAddress, order))
+	var response *http.Response
+	response, err = http.Get(fmt.Sprintf("%s/api/orders/%d", d.accrualAddress, order))
 	if err != nil {
 		return nil, 0, err
 	}
@@ -23,7 +24,8 @@ func (d Daemon) orderInfo(order int64) (info *orderInfoResponse, retryAfter int,
 
 	switch response.StatusCode {
 	case http.StatusOK:
-		content, err := ioutil.ReadAll(response.Body)
+		var content []byte
+		content, err = ioutil.ReadAll(response.Body)
 		if err != nil {
 			return nil, 0, err
 		}
